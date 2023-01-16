@@ -1,10 +1,10 @@
 import { Rule } from 'rulebound';
-import { vaultRuleParameters } from '..';
-import file from '../../util/file-with-code';
-import { resolveSymlink } from '../../util/resolve-symlink';
+import { vaultRuleParameters } from '../..';
+import file from '../../../util/file-with-code';
+import { resolveSymlink } from '../../../util/resolve-symlink';
 
-export function vaultStoredWithCode() {
-    return new Rule<vaultRuleParameters>('vault/stored-with-code')
+export function keepassVaultStoredWithCode() {
+    return new Rule<vaultRuleParameters>('keepass/stored-with-code')
         .describe(
             `
             Vaults are often used for authenticating our application. We don't want to store our

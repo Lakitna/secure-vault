@@ -1,8 +1,8 @@
 import { Rule } from 'rulebound';
-import { vaultRuleParameters } from '..';
+import { vaultRuleParameters } from '../..';
 
-export function vaultDecryptionTime() {
-    return new Rule<vaultRuleParameters>('vault/decryption-time')
+export function keepassVaultDecryptionTime() {
+    return new Rule<vaultRuleParameters>('keepass/decryption-time')
         .describe(
             `
                 Enforce a minimum time for opening the vault.

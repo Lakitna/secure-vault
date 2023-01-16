@@ -1,6 +1,6 @@
 import { Rule } from 'rulebound';
 import { vaultRuleParameters } from '../../..';
-import { createKeepassCredential } from '../../../../keepass/credential';
+import { createKeepassCredential } from '../../../../keepass/keepass-credential';
 
 export function vaultPasswordComplexityCharacterForbidReuse() {
     return new Rule<vaultRuleParameters>('vault/password/complexity/forbid-reuse')

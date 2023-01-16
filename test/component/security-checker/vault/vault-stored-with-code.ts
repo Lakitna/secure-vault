@@ -2,14 +2,14 @@ import { expect } from 'chai';
 import Rulebook from 'rulebound';
 import sinon from 'sinon';
 import { vaultRuleParameters } from '../../../../src/security-checker';
-import { vaultStoredWithCode } from '../../../../src/security-checker/vault/vault-stored-with-code';
+import { keepassVaultStoredWithCode } from '../../../../src/security-checker/vault/keepass/vault-stored-with-code';
 import file from '../../../../src/util/file-with-code';
 import { getBaseVault } from '../../support/base-vault';
 import { vaultRuleParams } from '../../support/vault-rule-param';
 
 describe('Vault security check: vault stored with code', () => {
     const vault = getBaseVault();
-    const rule = vaultStoredWithCode();
+    const rule = keepassVaultStoredWithCode();
     const rulebook = new Rulebook<vaultRuleParameters>();
     rulebook.add(rule);
 

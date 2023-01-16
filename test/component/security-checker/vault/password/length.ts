@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import Rulebook from 'rulebound';
+import * as sinon from 'sinon';
 import { SecretValue } from '../../../../../src';
 import { vaultRuleParameters } from '../../../../../src/security-checker';
 import { vaultPasswordLength } from '../../../../../src/security-checker/vault/password/length';
@@ -47,20 +48,35 @@ describe('Vault security check: vault password length', () => {
     });
 
     it('does not throw when the config is 0', async () => {
-        const params = await vaultRuleParams(vault);
+        // @ts-expect-error Accessing a private var
+        const ruleLogErrorStub = sinon.stub(rule._log, 'error');
 
+        const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.minPasswordLength = 0;
 
         await rulebook.enforce(rule.name, params);
+
+        expect(ruleLogErrorStub).to.not.have.been.called;
     });
 
-    it('throws when the config is below 0', async () => {
-        const params = await vaultRuleParams(vault);
+    it('disables when the config is below 0', async () => {
+        const rule = vaultPasswordLength();
+        const rulebook = new Rulebook<vaultRuleParameters>();
+        rule.on('enforce', () => {
+            throw new Error('Should not be enforced');
+        });
+        rulebook.add(rule);
 
+        // @ts-expect-error Accessing a private var
+        const ruleLogErrorStub = sinon.stub(rule._log, 'error');
+
+        const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.minPasswordLength = -5;
 
-        await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
-            'Configuration error: Min password length can not be below 0'
+        await rulebook.enforce(rule.name, params);
+
+        expect(ruleLogErrorStub).to.have.been.calledOnceWithExactly(
+            'Rule disabled: Configuration error: Min password length can not be below 0'
         );
     });
 });

@@ -2,8 +2,8 @@ import { Rule } from 'rulebound';
 import { vaultRuleParameters } from '../../..';
 import { detectPartialStringMatch } from '../../../../util/partial-string-match';
 
-export function vaultPasswordComplexityCharacterForbidVaultPath() {
-    return new Rule<vaultRuleParameters>('vault/password/complexity/forbid-vault-path')
+export function keepassVaultPasswordComplexityCharacterForbidVaultPath() {
+    return new Rule<vaultRuleParameters>('keepass/password/complexity/forbid-vault-path')
         .describe(
             `
             Ensure that the vault password does not contain part of the vault file path.

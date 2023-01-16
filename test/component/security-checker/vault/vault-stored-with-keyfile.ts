@@ -3,7 +3,7 @@ import path from 'node:path';
 import Rulebook from 'rulebound';
 import sinon from 'sinon';
 import { vaultRuleParameters } from '../../../../src/security-checker';
-import { vaultStoredWithKeyfile } from '../../../../src/security-checker/vault/vault-stored-with-keyfile';
+import { keepassVaultStoredWithKeyfile } from '../../../../src/security-checker/vault/keepass/vault-stored-with-keyfile';
 import git from '../../../../src/util/git';
 import npm from '../../../../src/util/npm';
 import { getBaseVault } from '../../support/base-vault';
@@ -11,7 +11,7 @@ import { vaultRuleParams } from '../../support/vault-rule-param';
 
 describe('Vault security check: vault stored with keyfile', () => {
     const vault = getBaseVault();
-    const rule = vaultStoredWithKeyfile();
+    const rule = keepassVaultStoredWithKeyfile();
     const rulebook = new Rulebook<vaultRuleParameters>();
     rulebook.add(rule);
 

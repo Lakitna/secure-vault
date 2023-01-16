@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import Rulebook from 'rulebound';
+import * as sinon from 'sinon';
 import { credentialRuleParameters } from '../../../../../src/security-checker';
 import { credentialPasswordAge } from '../../../../../src/security-checker/credential/password/age';
 import { getBaseVault } from '../../../support/base-vault';
@@ -36,25 +37,45 @@ describe('Credential security check: credential password age', () => {
         await rulebook.enforce(rule.name, params);
     });
 
-    it('throws when the config is 0', async () => {
-        const params = await credentialRuleParam(vault);
+    it('disables when the config is 0', async () => {
+        const rule = credentialPasswordAge();
+        const rulebook = new Rulebook<credentialRuleParameters>();
+        rule.on('enforce', () => {
+            throw new Error('Should not be enforced');
+        });
+        rulebook.add(rule);
 
+        // @ts-expect-error Accessing a private var
+        const ruleLogErrorStub = sinon.stub(rule._log, 'error');
+
+        const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.maxPasswordAge = 0;
 
-        await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
-            'Configuration error: Max password age can not be equal to or below 0. ' +
-                'If you want this rule to never throw an error, use Infinity.'
+        await rulebook.enforce(rule.name, params);
+
+        expect(ruleLogErrorStub).to.have.been.calledOnceWithExactly(
+            'Rule disabled: Configuration error: Max password age can not be equal to or below 0'
         );
     });
 
-    it('throws when the config is below 0', async () => {
-        const params = await credentialRuleParam(vault);
+    it('disables when the config is below 0', async () => {
+        const rule = credentialPasswordAge();
+        const rulebook = new Rulebook<credentialRuleParameters>();
+        rule.on('enforce', () => {
+            throw new Error('Should not be enforced');
+        });
+        rulebook.add(rule);
 
+        // @ts-expect-error Accessing a private var
+        const ruleLogErrorStub = sinon.stub(rule._log, 'error');
+
+        const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.maxPasswordAge = -5;
 
-        await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
-            'Configuration error: Max password age can not be equal to or below 0. ' +
-                'If you want this rule to never throw an error, use Infinity.'
+        await rulebook.enforce(rule.name, params);
+
+        expect(ruleLogErrorStub).to.have.been.calledOnceWithExactly(
+            'Rule disabled: Configuration error: Max password age can not be equal to or below 0'
         );
     });
 });

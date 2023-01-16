@@ -1,11 +1,9 @@
-import { KeepassVault } from './keepass/keepass-vault';
-
 export {
     SecurityConfig,
     securityConfigPresetNames,
     securityConfigPresets,
 } from './config/security';
-export { KeepassCredential, KeepassCredentialWithoutSecrets } from './keepass/credential';
+export { Credential, CredentialWithoutSecrets } from './credentials';
 export { KeepassVault } from './keepass/keepass-vault';
 export { SecretValue } from './secret-value';
 

@@ -1,8 +1,8 @@
 import { Rule } from 'rulebound';
-import { vaultRuleParameters } from '../..';
+import { vaultRuleParameters } from '../../..';
 
-export function vaultKeyfileRequire() {
-    return new Rule<vaultRuleParameters>('vault/keyfile/require')
+export function keepassVaultKeyfileRequire() {
+    return new Rule<vaultRuleParameters>('keepass/keyfile/require')
         .describe(
             `
             Enforce a keyfile as a second authentication factor.

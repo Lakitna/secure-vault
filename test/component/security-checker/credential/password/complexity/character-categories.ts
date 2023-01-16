@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import Rulebook from 'rulebound';
+import * as sinon from 'sinon';
 import { SecretValue } from '../../../../../../src';
 import { credentialRuleParameters } from '../../../../../../src/security-checker';
 import { credentialPasswordComplexityCharacterCategories } from '../../../../../../src/security-checker/credential/password/complexity/character-categories';
@@ -56,23 +57,45 @@ describe('Credential security check: credential password character categories', 
         await rulebook.enforce(rule.name, params);
     });
 
-    it('throws when the config is 0', async () => {
-        const params = await credentialRuleParam(vault);
+    it('disables when the config is 0', async () => {
+        const rule = credentialPasswordComplexityCharacterCategories();
+        const rulebook = new Rulebook<credentialRuleParameters>();
+        rule.on('enforce', () => {
+            throw new Error('Should not be enforced');
+        });
+        rulebook.add(rule);
 
+        // @ts-expect-error Accessing a private var
+        const ruleLogErrorStub = sinon.stub(rule._log, 'error');
+
+        const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.passwordComplexity.minCharacterCategories = 0;
 
-        await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
-            'Configuration error: Min character category count can not be below 1'
+        await rulebook.enforce(rule.name, params);
+
+        expect(ruleLogErrorStub).to.have.been.calledOnceWithExactly(
+            'Rule disabled: Configuration error: Min character category count can not be below 1'
         );
     });
 
-    it('throws when the config is too high', async () => {
-        const params = await credentialRuleParam(vault);
+    it('disables when the config is too high', async () => {
+        const rule = credentialPasswordComplexityCharacterCategories();
+        const rulebook = new Rulebook<credentialRuleParameters>();
+        rule.on('enforce', () => {
+            throw new Error('Should not be enforced');
+        });
+        rulebook.add(rule);
 
+        // @ts-expect-error Accessing a private var
+        const ruleLogErrorStub = sinon.stub(rule._log, 'error');
+
+        const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.passwordComplexity.minCharacterCategories = 5;
 
-        await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
-            'Configuration error: Min character category count can not be above 4'
+        await rulebook.enforce(rule.name, params);
+
+        expect(ruleLogErrorStub).to.have.been.calledOnceWithExactly(
+            'Rule disabled: Configuration error: Min character category count can not be above 4'
         );
     });
 });

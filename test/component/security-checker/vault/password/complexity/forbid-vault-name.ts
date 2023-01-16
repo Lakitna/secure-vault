@@ -2,13 +2,13 @@ import { expect } from 'chai';
 import Rulebook from 'rulebound';
 import { SecretValue } from '../../../../../../src';
 import { vaultRuleParameters } from '../../../../../../src/security-checker';
-import { vaultPasswordComplexityCharacterForbidVaultName } from '../../../../../../src/security-checker/vault/password/complexity/forbid-vault-name';
+import { keepassVaultPasswordComplexityCharacterForbidVaultName } from '../../../../../../src/security-checker/vault/keepass/password/forbid-vault-name';
 import { getBaseVault } from '../../../../support/base-vault';
 import { vaultRuleParams } from '../../../../support/vault-rule-param';
 
 describe('Vault security check: vault password forbid vault name', () => {
     const vault = getBaseVault();
-    const rule = vaultPasswordComplexityCharacterForbidVaultName();
+    const rule = keepassVaultPasswordComplexityCharacterForbidVaultName();
     const rulebook = new Rulebook<vaultRuleParameters>();
     rulebook.add(rule);
 

@@ -3,24 +3,15 @@ import camelcase from 'camelcase';
 import { readFile, writeFile } from 'fs/promises';
 import kdbxweb, { Kdbx } from 'kdbxweb';
 import { RulebookConfig } from 'rulebound';
-import {
-    ResolvedSecurityConfig,
-    resolveSecurityConfig,
-    SecurityConfig,
-    securityConfigPresetNames,
-} from '../config/security';
+import { SecurityConfig, securityConfigPresetNames } from '../config/security';
 import { VaultCredential } from '../config/vault-password-prompt';
+import { Credential, CredentialData, CredentialWithoutSecrets } from '../credentials';
 import { getRememberedPassword, rememberPassword } from '../prompt/remember-password';
 import { SecretValue } from '../secret-value';
 import { checkCredentialSecurity, checkVaultSecurity } from '../security-checker';
 import { resolveSymlink } from '../util/resolve-symlink';
-import {
-    createKeepassCredential,
-    createKeepassCredentialWithoutSecrets,
-    KeepassCredential,
-    KeepassCredentialData,
-    KeepassCredentialWithoutSecrets,
-} from './credential';
+import { GetCredentialOptions, Vault } from '../vault';
+import { createCredentialWithoutSecrets, createKeepassCredential } from './keepass-credential';
 
 /**
  * The KDBX4 vault format uses Argon2 for password hashing. Kdbxweb does not support this out of
@@ -44,38 +35,39 @@ kdbxweb.CryptoEngine.setArgon2Impl(
 
 interface KeepassVaultOptions {
     securityConfig: securityConfigPresetNames | Partial<SecurityConfig>;
+
+    /**
+     * Path to the keyfile used as a second authentication factor for the vault.
+     */
     keyfilePath: string;
+
     /**
      * Open the vault in readonly mode. In this mode, you can't create, update, or delete
      * credentials.
+     *
+     * @default true
      */
     readonly: boolean;
+
+    /**
+     * @default 'info'
+     */
     logLevel: RulebookConfig['verboseness'];
 }
 
-export class KeepassVault {
+export class KeepassVault extends Vault {
     public path: string;
-    public securityConfig: ResolvedSecurityConfig;
     public keyfilePath?: KeepassVaultOptions['keyfilePath'];
-    public readonly: KeepassVaultOptions['readonly'];
-    public logLevel?: KeepassVaultOptions['logLevel'];
     private vault?: Kdbx;
     private openTries: number;
 
     constructor(keepassVaultPath: string, options: Partial<KeepassVaultOptions> = {}) {
+        super(options);
         this.path = keepassVaultPath;
         this.keyfilePath = options.keyfilePath;
-        this.securityConfig = resolveSecurityConfig(options.securityConfig);
         this.openTries = 0;
-        this.readonly = options.readonly ?? true;
-        this.logLevel = options.logLevel;
     }
 
-    /**
-     * Open the vault. Will prompt the user for credentials when required.
-     *
-     * Use this function if you want control over when the user is prompted for credentials.
-     */
     public async open(): Promise<Kdbx> {
         if (this.vault) {
             return this.vault;
@@ -123,12 +115,7 @@ export class KeepassVault {
         return this.vault;
     }
 
-    /**
-     * List all credentials without secrets
-     *
-     * @param group List only credentials in this group instead. Case insensitive.
-     */
-    public async listCredentials(group?: string): Promise<KeepassCredentialWithoutSecrets[]> {
+    public async listCredentials(group?: string): Promise<CredentialWithoutSecrets[]> {
         const vault = await this.open();
 
         const defaultGroup = vault.getDefaultGroup();
@@ -140,41 +127,14 @@ export class KeepassVault {
             });
         }
 
-        return entries.map((entry) => createKeepassCredentialWithoutSecrets(entry));
+        return entries.map((entry) => createCredentialWithoutSecrets(entry));
     }
 
-    /**
-     * List all credentials with secrets.
-     *
-     * Note: No security checks will be performed. You probably don't want to use this.
-     *
-     * @param group List only credentials in this group instead. Case insensitive.
-     */
-    public async listCredentialsWithSecrets(group?: string): Promise<KeepassCredential[]> {
-        const vault = await this.open();
-
-        const defaultGroup = vault.getDefaultGroup();
-        let entries = [...defaultGroup.allEntries()];
-
-        if (group) {
-            entries = entries.filter((entry) => {
-                return group.toLowerCase() === (entry.parentGroup?.name ?? '').toLowerCase();
-            });
-        }
-
-        return entries.map((entry) => createKeepassCredential(entry));
-    }
-
-    /**
-     * Get a credential from the vault.
-     *
-     * @param group Case insensitive
-     * @param entryTitle Case insensitive
-     */
     public async getCredential(
         group: string,
-        entryTitle: string
-    ): Promise<KeepassCredential | null> {
+        entryTitle: string,
+        options?: GetCredentialOptions
+    ): Promise<Credential | null> {
         const vault = await this.open();
 
         const defaultGroup = vault.getDefaultGroup();
@@ -186,41 +146,36 @@ export class KeepassVault {
         if (!entry) return null;
 
         const cred = createKeepassCredential(entry);
-        await checkCredentialSecurity(this.securityConfig, cred, this);
+        if (options && options.secure === false) {
+            await checkCredentialSecurity(this.securityConfig, cred, this);
+        }
         return cred;
     }
 
-    /**
-     * Get a credential from the vault.
-     */
-    public async getCredentialById(uuid: string): Promise<KeepassCredential | null> {
+    public async getCredentialById(
+        uuid: string,
+        options?: GetCredentialOptions
+    ): Promise<Credential | null> {
         const vault = await this.open();
         const entry = await this.getEntryById(vault, uuid);
         if (!entry) return null;
 
         const cred = createKeepassCredential(entry);
-        await checkCredentialSecurity(this.securityConfig, cred, this);
+        if (options && options.secure === false) {
+            await checkCredentialSecurity(this.securityConfig, cred, this);
+        }
         return cred;
     }
 
-    // TODO: Add create
-    // public async createCredential(input: {
-    //     data?: Partial<KeepassCredentialData>,
-    //     attachments?: Record<string, SecretValue<Uint8Array>>,
-    //     expiration?: Date
-    // }): Promise<KeepassCredential> {
+    public async createCredential(): Promise<Credential> {
+        // TODO: Implement
+        throw new Error('Not implemented');
+    }
 
-    // }
-
-    /**
-     * Update a credential.
-     *
-     * Don't forget to save the vault afterwards.
-     */
     public async updateCredential(
-        credential: KeepassCredential,
+        credential: Credential,
         input: Partial<{
-            data: Partial<KeepassCredentialData>;
+            data: Partial<CredentialData>;
             attachments: Record<string, SecretValue<Uint8Array> | null>;
             expiration: Date | null;
         }>
@@ -285,12 +240,7 @@ export class KeepassVault {
         entry.times.update();
     }
 
-    /**
-     * Delete a credential.
-     *
-     * Don't forget to save the vault afterwards.
-     */
-    public async deleteCredential(credential: KeepassCredential): Promise<void> {
+    public async deleteCredential(credential: Credential): Promise<void> {
         if (this.readonly) {
             throw new Error(`Vault was opened in readonly mode. Can't delete credential.`);
         }
@@ -313,9 +263,12 @@ export class KeepassVault {
         await writeFile(vaultPath, Buffer.from(fileContent));
     }
 
+    /**
+     * Get the secrets to open the vault.
+     */
     private async getVaultCredential(): Promise<VaultCredential> {
-        // Only use remembered master password on the first try. Otherwise we'll get stuck in an
-        // infinite loop of bad master passwords.
+        // Only use remembered vault password on the first try. Otherwise we'll get stuck in an
+        // infinite loop of bad vault passwords.
         if (this.openTries === 0 && this.securityConfig.allowPasswordSave) {
             const rememberedPass = await getRememberedPassword(this.path);
             if (rememberedPass instanceof SecretValue) {

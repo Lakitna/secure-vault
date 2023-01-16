@@ -1,13 +1,13 @@
 import { expect } from 'chai';
 import Rulebook from 'rulebound';
 import { vaultRuleParameters } from '../../../../../src/security-checker';
-import { vaultKeyfileRequire } from '../../../../../src/security-checker/vault/keyfile/keyfile-require';
+import { keepassVaultKeyfileRequire } from '../../../../../src/security-checker/vault/keepass/keyfile/keyfile-require';
 import { getBaseVault } from '../../../support/base-vault';
 import { vaultRuleParams } from '../../../support/vault-rule-param';
 
 describe('Vault security check: require keyfile', () => {
     const vault = getBaseVault();
-    const rule = vaultKeyfileRequire();
+    const rule = keepassVaultKeyfileRequire();
     const rulebook = new Rulebook<vaultRuleParameters>();
     rulebook.add(rule);
 

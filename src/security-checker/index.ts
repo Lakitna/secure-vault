@@ -2,9 +2,9 @@ import { Kdbx } from 'kdbxweb';
 import { Rulebook, RulebookConfig, RuleError } from 'rulebound';
 import { ResolvedSecurityConfig } from '../config/security';
 import { VaultCredential } from '../config/vault-password-prompt';
+import { Credential } from '../credentials';
 import { CredentialRuleError } from '../error/credential-error';
 import { VaultRuleError } from '../error/vault-error';
-import { KeepassCredential } from '../keepass/credential';
 import { KeepassVault } from '../keepass/keepass-vault';
 
 import { credentialAllowExpired } from './credential/credential-allow-expired';
@@ -16,22 +16,22 @@ import { credentialPasswordComplexityForbidUrl } from './credential/password/com
 import { credentialPasswordComplexityForbidUsername } from './credential/password/complexity/forbid-username';
 import { credentialPasswordLength } from './credential/password/length';
 
-import { vaultKeyfileRequire } from './vault/keyfile/keyfile-require';
-import { vaultKeyfileStoredWithCode } from './vault/keyfile/keyfile-stored-with-code';
+import { keepassVaultKeyfileRequire } from './vault/keepass/keyfile/keyfile-require';
+import { keepassVaultKeyfileStoredWithCode } from './vault/keepass/keyfile/keyfile-stored-with-code';
+import { keepassVaultPasswordComplexityCharacterForbidVaultName } from './vault/keepass/password/forbid-vault-name';
+import { keepassVaultPasswordComplexityCharacterForbidVaultPath } from './vault/keepass/password/forbid-vault-path';
+import { keepassVaultDecryptionTime } from './vault/keepass/vault-decryption-time';
+import { keepassVaultStoredWithCode } from './vault/keepass/vault-stored-with-code';
+import { keepassVaultStoredWithKeyfile } from './vault/keepass/vault-stored-with-keyfile';
 import { vaultPasswordAge } from './vault/password/age';
 import { vaultPasswordComplexityCharacterCategories } from './vault/password/complexity/character-categories';
 import { vaultPasswordComplexityCharacterForbidReuse } from './vault/password/complexity/forbid-reuse';
-import { vaultPasswordComplexityCharacterForbidVaultName } from './vault/password/complexity/forbid-vault-name';
-import { vaultPasswordComplexityCharacterForbidVaultPath } from './vault/password/complexity/forbid-vault-path';
 import { vaultPasswordLength } from './vault/password/length';
-import { vaultDecryptionTime } from './vault/vault-decryption-time';
-import { vaultStoredWithCode } from './vault/vault-stored-with-code';
-import { vaultStoredWithKeyfile } from './vault/vault-stored-with-keyfile';
 
 export interface credentialRuleParameters {
     config: ResolvedSecurityConfig;
     vault: KeepassVault;
-    credential: KeepassCredential;
+    credential: Credential;
 }
 
 let credentialRuleset: Rulebook<credentialRuleParameters>;
@@ -55,7 +55,7 @@ function getCredentialRuleset(config: Partial<RulebookConfig>) {
 
 export async function checkCredentialSecurity(
     config: ResolvedSecurityConfig,
-    credential: KeepassCredential,
+    credential: Credential,
     vault: KeepassVault
 ): Promise<void> {
     const rulebook = await getCredentialRuleset({
@@ -64,11 +64,11 @@ export async function checkCredentialSecurity(
 
     try {
         await rulebook.enforce('**/*', { config, credential, vault });
-    } catch (err: unknown) {
-        if (err instanceof RuleError) {
-            throw new CredentialRuleError(credential, err);
+    } catch (error: unknown) {
+        if (error instanceof RuleError) {
+            throw new CredentialRuleError(credential, error);
         }
-        throw err;
+        throw new Error('Unexpected error type', { cause: error });
     }
 }
 
@@ -84,17 +84,18 @@ function getVaultRuleset(config: Partial<RulebookConfig>) {
 
     const rules = new Rulebook<vaultRuleParameters>(config);
 
-    rules.add(vaultDecryptionTime);
-    rules.add(vaultKeyfileRequire);
-    rules.add(vaultKeyfileStoredWithCode);
     rules.add(vaultPasswordAge);
     rules.add(vaultPasswordComplexityCharacterCategories);
     rules.add(vaultPasswordComplexityCharacterForbidReuse);
-    rules.add(vaultPasswordComplexityCharacterForbidVaultName);
-    rules.add(vaultPasswordComplexityCharacterForbidVaultPath);
     rules.add(vaultPasswordLength);
-    rules.add(vaultStoredWithCode);
-    rules.add(vaultStoredWithKeyfile);
+
+    rules.add(keepassVaultDecryptionTime);
+    rules.add(keepassVaultKeyfileRequire);
+    rules.add(keepassVaultKeyfileStoredWithCode);
+    rules.add(keepassVaultPasswordComplexityCharacterForbidVaultName);
+    rules.add(keepassVaultPasswordComplexityCharacterForbidVaultPath);
+    rules.add(keepassVaultStoredWithCode);
+    rules.add(keepassVaultStoredWithKeyfile);
 
     vaultRuleset = rules;
     return vaultRuleset;
@@ -106,15 +107,16 @@ export async function checkVaultSecurity(
     vaultCredential: VaultCredential
 ): Promise<void> {
     const rulebook = await getVaultRuleset({
-        // verboseness: vault.logLevel,
+        // TODO: Get loglevel from somehwere
+        // verboseness: 'info',
     });
 
     try {
         await rulebook.enforce('**/*', { config, vault, vaultCredential });
-    } catch (err) {
-        if (err instanceof RuleError) {
-            throw new VaultRuleError(vault, err);
+    } catch (error) {
+        if (error instanceof RuleError) {
+            throw new VaultRuleError(vault, error);
         }
-        throw err;
+        throw new Error('Unexpected error type', { cause: error });
     }
 }

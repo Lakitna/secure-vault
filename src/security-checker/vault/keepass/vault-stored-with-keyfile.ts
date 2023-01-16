@@ -1,12 +1,12 @@
 import { dirname } from 'path';
 import { Rule } from 'rulebound';
-import { vaultRuleParameters } from '..';
-import git from '../../util/git';
-import npm from '../../util/npm';
-import { resolveSymlink } from '../../util/resolve-symlink';
+import { vaultRuleParameters } from '../..';
+import git from '../../../util/git';
+import npm from '../../../util/npm';
+import { resolveSymlink } from '../../../util/resolve-symlink';
 
-export function vaultStoredWithKeyfile() {
-    return new Rule<vaultRuleParameters>('vault/stored-with-keyfile')
+export function keepassVaultStoredWithKeyfile() {
+    return new Rule<vaultRuleParameters>('keepass/stored-with-keyfile')
         .describe(
             `
             The keyfile is used as a second authentication factor. We don't want to store our

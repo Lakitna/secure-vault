@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import Rulebook from 'rulebound';
+import * as sinon from 'sinon';
 import { SecretValue } from '../../../../../../src';
 import { vaultRuleParameters } from '../../../../../../src/security-checker';
 import { vaultPasswordComplexityCharacterCategories } from '../../../../../../src/security-checker/vault/password/complexity/character-categories';
@@ -56,23 +57,45 @@ describe('Vault security check: vault password character categories', () => {
         await rulebook.enforce(rule.name, params);
     });
 
-    it('throws when the config is 0', async () => {
-        const params = await vaultRuleParams(vault);
+    it('disables when the config is 0', async () => {
+        const rule = vaultPasswordComplexityCharacterCategories();
+        const rulebook = new Rulebook<vaultRuleParameters>();
+        rule.on('enforce', () => {
+            throw new Error('Should not be enforced');
+        });
+        rulebook.add(rule);
 
+        // @ts-expect-error Accessing a private var
+        const ruleLogErrorStub = sinon.stub(rule._log, 'error');
+
+        const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.passwordComplexity.minCharacterCategories = 0;
 
-        await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
-            'Configuration error: Min character category count can not be below 1'
+        await rulebook.enforce(rule.name, params);
+
+        expect(ruleLogErrorStub).to.have.been.calledOnceWithExactly(
+            'Rule disabled: Configuration error: Min character category count can not be below 1'
         );
     });
 
-    it('throws when the config is too high', async () => {
-        const params = await vaultRuleParams(vault);
+    it('disables when the config is too high', async () => {
+        const rule = vaultPasswordComplexityCharacterCategories();
+        const rulebook = new Rulebook<vaultRuleParameters>();
+        rule.on('enforce', () => {
+            throw new Error('Should not be enforced');
+        });
+        rulebook.add(rule);
 
+        // @ts-expect-error Accessing a private var
+        const ruleLogErrorStub = sinon.stub(rule._log, 'error');
+
+        const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.passwordComplexity.minCharacterCategories = 5;
 
-        await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
-            'Configuration error: Min character category count can not be above 4'
+        await rulebook.enforce(rule.name, params);
+
+        expect(ruleLogErrorStub).to.have.been.calledOnceWithExactly(
+            'Rule disabled: Configuration error: Min character category count can not be above 4'
         );
     });
 });

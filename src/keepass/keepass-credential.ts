@@ -1,77 +1,22 @@
 import camelcase from 'camelcase';
 import kdbxweb, { ProtectedValue } from 'kdbxweb';
+import {
+    Credential,
+    CredentialData,
+    CredentialDataWithoutSecrets,
+    CredentialWithoutSecrets,
+} from '../credentials';
 import { SecretValue } from '../secret-value';
-
-interface BaseKeepassCredential {
-    /**
-     * UUID as assigned by Keepass
-     */
-    id: string;
-    /**
-     * `true` if the credential has an expiration date
-     */
-    hasExpiration: boolean;
-    /**
-     * `true` if Keepass says the expiration date has passed
-     */
-    expired: boolean;
-    /**
-     * Hours since the password was last changed
-     */
-    passwordAge: number;
-    /**
-     * Path to the credential inside the vault
-     */
-    path: string[];
-}
-
-interface BaseKeepassCredentialData {
-    title: string;
-    username: string;
-    url: string;
-    notes: string;
-}
-
-export interface KeepassCredentialWithoutSecrets extends BaseKeepassCredential {
-    /**
-     * The credential data itself. Will include username, title, etc.
-     *
-     * Will not contain any secret values.
-     */
-    data: KeepassCredentialDataWithoutSecrets;
-}
-
-export interface KeepassCredentialDataWithoutSecrets extends BaseKeepassCredentialData {
-    [customAttribute: string]: string;
-}
-
-export interface KeepassCredential extends BaseKeepassCredential {
-    /**
-     * The credential data itself. Will include username, password, title, etc.
-     *
-     * Will also contain secret values.
-     */
-    data: KeepassCredentialData;
-    /**
-     * File attachments from the vault.
-     */
-    attachments: Record<string, SecretValue<Uint8Array>>;
-}
-
-export interface KeepassCredentialData extends BaseKeepassCredentialData {
-    password: SecretValue<string>;
-    [customAttribute: string]: string | SecretValue<string>;
-}
 
 /**
  * Create a credentials object from a kdbx entry
  *
  * Will not include any secret values.
  */
-export function createKeepassCredentialWithoutSecrets(
+export function createCredentialWithoutSecrets(
     kdbxEntry: kdbxweb.KdbxEntry
-): KeepassCredentialWithoutSecrets {
-    const data: Partial<KeepassCredentialDataWithoutSecrets> = {};
+): CredentialWithoutSecrets {
+    const data: Partial<CredentialDataWithoutSecrets> = {};
     for (const [key, val] of kdbxEntry.fields) {
         if (val instanceof kdbxweb.ProtectedValue) {
             continue;
@@ -100,7 +45,7 @@ export function createKeepassCredentialWithoutSecrets(
         hasExpiration: hasExpiration,
         expired: hasExpiration && expired,
         passwordAge: getCredentialPasswordAge(kdbxEntry),
-        data: data as KeepassCredentialDataWithoutSecrets,
+        data: data as CredentialDataWithoutSecrets,
         path: getEntryPath(kdbxEntry),
     };
 }
@@ -127,10 +72,10 @@ function getEntryPath(entry: kdbxweb.KdbxEntry): string[] {
 /**
  * Create a credentials object from a kdbx entry
  */
-export function createKeepassCredential(kdbxEntry: kdbxweb.KdbxEntry): KeepassCredential {
-    const credentialWithoutSecrets = createKeepassCredentialWithoutSecrets(kdbxEntry);
+export function createKeepassCredential(kdbxEntry: kdbxweb.KdbxEntry): Credential {
+    const credentialWithoutSecrets = createCredentialWithoutSecrets(kdbxEntry);
 
-    const data: Partial<KeepassCredentialData> = credentialWithoutSecrets.data;
+    const data: Partial<CredentialData> = credentialWithoutSecrets.data;
     for (const [key, val] of kdbxEntry.fields) {
         if (val instanceof kdbxweb.ProtectedValue) {
             data[camelcase(key)] = new SecretValue('string', val);
@@ -142,7 +87,7 @@ export function createKeepassCredential(kdbxEntry: kdbxweb.KdbxEntry): KeepassCr
         data.password = new SecretValue('string', data.password ?? '');
     }
 
-    const attachments: KeepassCredential['attachments'] = {};
+    const attachments: Credential['attachments'] = {};
     for (const [key, val] of kdbxEntry.binaries) {
         let binary = 'hash' in val ? val.value : val;
         if (binary instanceof ArrayBuffer) {
@@ -152,9 +97,9 @@ export function createKeepassCredential(kdbxEntry: kdbxweb.KdbxEntry): KeepassCr
         attachments[key] = new SecretValue('binary', binary);
     }
 
-    const cred: KeepassCredential = {
+    const cred: Credential = {
         ...credentialWithoutSecrets,
-        data: data as KeepassCredentialData,
+        data: data as CredentialData,
         attachments: attachments,
     };
     return cred;

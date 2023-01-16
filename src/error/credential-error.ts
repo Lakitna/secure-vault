@@ -1,12 +1,12 @@
 import c from 'ansi-colors';
 import { RuleError } from 'rulebound';
-import { KeepassCredential } from '../keepass/credential';
+import { Credential } from '../credentials';
 
 export class CredentialRuleError extends Error {
-    credential: Pick<KeepassCredential, 'id' | 'path'>;
+    credential: Pick<Credential, 'id' | 'path'>;
     rule: string;
 
-    constructor(credential: KeepassCredential, ruleError: RuleError) {
+    constructor(credential: Credential, ruleError: RuleError) {
         const description = ruleError.description ? '\n' + c.yellow(ruleError.description) : '';
         super(ruleError.message + description);
 

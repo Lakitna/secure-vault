@@ -25,8 +25,7 @@ export function vaultPasswordAge() {
             const maxPasswordAge = config.vaultRestrictions.maxPasswordAge;
             if (maxPasswordAge <= 0) {
                 throw new TypeError(
-                    'Configuration error: Max password age can not be equal to or below 0. ' +
-                        'If you want this rule to never throw an error, use `Infinity`.'
+                    'Configuration error: Max password age can not be equal to or below 0'
                 );
             }
 

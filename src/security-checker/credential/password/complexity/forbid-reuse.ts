@@ -1,5 +1,7 @@
 import { Rule } from 'rulebound';
 import { credentialRuleParameters } from '../../..';
+import { Credential } from '../../../../credentials';
+import { Vault } from '../../../../vault';
 
 export function credentialPasswordComplexityForbidReuse() {
     return new Rule<credentialRuleParameters>('credential/password/complexity/forbid-reuse')
@@ -29,9 +31,7 @@ export function credentialPasswordComplexityForbidReuse() {
         .define(async ({ vault, credential }) => {
             const thisPassword = credential.data.password;
 
-            const otherCredentials = (await vault.listCredentialsWithSecrets()).filter(
-                (other) => other.id !== credential.id
-            );
+            const otherCredentials = await getOtherCredentials(vault, credential);
 
             for (const otherCredential of otherCredentials) {
                 const otherPassword = otherCredential.data.password;
@@ -49,4 +49,18 @@ export function credentialPasswordComplexityForbidReuse() {
 
             return true;
         });
+}
+
+async function getOtherCredentials(vault: Vault, credential: Credential) {
+    const withoutSecrets = (await vault.listCredentials()).filter(
+        (other) => other.id !== credential.id
+    );
+
+    const otherCredentials = await Promise.all(
+        withoutSecrets.map(({ id }) => {
+            return vault.getCredentialById(id, { secure: false });
+        })
+    );
+
+    return otherCredentials.filter((cred): cred is Credential => cred !== null);
 }
