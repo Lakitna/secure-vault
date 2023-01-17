@@ -41,7 +41,7 @@ export class SecretValue<T extends string | Uint8Array> {
     [util.inspect.custom]() {
         class SecretValue {
             value: string;
-            private type: string;
+            type: string;
 
             constructor(type: string) {
                 this.type = type;

@@ -2,7 +2,15 @@
   "name": "secure-vault",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "types": "./dist/secure-vault.d.ts",
+  "main": "./dist/secure-vault.cjs",
+  "exports": {
+    "import": "./dist/secure-vault.mjs",
+    "require": "./dist/secure-vault.cjs"
+  },
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "scripts": {
     "build": "rollup -c",
@@ -39,7 +47,9 @@
     "mocha": "^10.2.0",
     "prettier": "^2.8.1",
     "rollup": "^3.7.3",
+    "rollup-plugin-cleanup": "^3.2.1",
     "rollup-plugin-copy": "^3.4.0",
+    "rollup-plugin-dts": "^5.1.1",
     "rollup-plugin-node-externals": "^5.0.2",
     "rollup-plugin-watcher": "^1.0.1",
     "sinon": "^15.0.0",
