@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import Rulebook from 'rulebound';
+import Rulebook, { Rule } from 'rulebound';
 import * as sinon from 'sinon';
 import { SecretValue } from '../../../../../src';
 import { credentialRuleParameters } from '../../../../../src/security-checker';
@@ -9,13 +9,29 @@ import { credentialRuleParam } from '../../../support/credential-rule-param';
 
 describe('Credential security check: credential password length', () => {
     const vault = getBaseVault();
-    const rule = credentialPasswordLength();
     const rulebook = new Rulebook<credentialRuleParameters>();
-    rulebook.add(rule);
+    let rule: Rule<credentialRuleParameters>;
+
+    beforeEach(() => {
+        rule = credentialPasswordLength();
+        rulebook.add(rule);
+    });
+
+    afterEach(() => {
+        rulebook.rules = [];
+    });
 
     after(async () => {
         const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.minPasswordLength = 1;
+    });
+
+    it('has a description', async () => {
+        expect(rulebook.rules.length).to.equal(1);
+
+        const rule = rulebook.rules[0];
+        expect(rule.description).to.be.a('string');
+        expect(rule.description?.length).to.be.above(0);
     });
 
     it('throws when the credential password is too short', async () => {
@@ -60,12 +76,9 @@ describe('Credential security check: credential password length', () => {
     });
 
     it('disables when the config is below 0', async () => {
-        const rule = credentialPasswordLength();
-        const rulebook = new Rulebook<credentialRuleParameters>();
         rule.on('enforce', () => {
             throw new Error('Should not be enforced');
         });
-        rulebook.add(rule);
 
         // @ts-expect-error Accessing a private var
         const ruleLogErrorStub = sinon.stub(rule._log, 'error');

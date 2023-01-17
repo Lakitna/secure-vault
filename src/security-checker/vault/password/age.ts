@@ -29,14 +29,15 @@ export function vaultPasswordAge() {
                 );
             }
 
+            if (maxPasswordAge === Infinity) {
+                // Will always be true, no need to compute
+                return 'Disabled by security config `maxPasswordAge`';
+            }
+
             return true;
         })
         .define(({ config, vault }) => {
             const maxPasswordAge = config.vaultRestrictions.maxPasswordAge;
-            if (maxPasswordAge === Infinity) {
-                // Will always be true, no need to compute
-                return true;
-            }
 
             const passwordChanged = vault.meta.keyChanged;
             if (!passwordChanged) {

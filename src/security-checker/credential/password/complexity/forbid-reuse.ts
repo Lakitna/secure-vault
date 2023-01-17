@@ -17,7 +17,7 @@ export function credentialPasswordComplexityForbidReuse() {
         )
         .enable(async ({ config, credential }) => {
             const forbidReuse = config.credentialRestrictions.passwordComplexity.forbidReuse;
-            if (!forbidReuse) {
+            if (forbidReuse === false) {
                 return 'Disabled by security config `forbidReuse`';
             }
 
@@ -52,14 +52,14 @@ export function credentialPasswordComplexityForbidReuse() {
 }
 
 async function getOtherCredentials(vault: Vault, credential: Credential) {
-    const withoutSecrets = (await vault.listCredentials()).filter(
-        (other) => other.id !== credential.id
-    );
+    const withoutSecrets = await vault.listCredentials();
 
     const otherCredentials = await Promise.all(
-        withoutSecrets.map(({ id }) => {
-            return vault.getCredentialById(id, { secure: false });
-        })
+        withoutSecrets
+            .filter((other) => other.id !== credential.id)
+            .map(({ id }) => {
+                return vault.getCredentialById(id, { secure: false });
+            })
     );
 
     return otherCredentials.filter((cred): cred is Credential => cred !== null);

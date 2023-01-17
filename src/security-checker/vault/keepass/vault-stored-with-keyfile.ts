@@ -45,10 +45,7 @@ export function keepassVaultStoredWithKeyfile() {
 
             const vaultGitRoot = await git.getRoot(dirname(vaultPath));
             const keyfileGitRoot = await git.getRoot(dirname(keyfilePath));
-            const sameGit =
-                vaultGitRoot !== false &&
-                keyfileGitRoot !== false &&
-                vaultGitRoot === keyfileGitRoot;
+            const sameGit = vaultGitRoot !== false && vaultGitRoot === keyfileGitRoot;
             if (sameGit) {
                 const vaultGitignored = await git.isIgnored(vaultPath);
                 const keyfileGitignored = await git.isIgnored(keyfilePath);
@@ -66,10 +63,7 @@ export function keepassVaultStoredWithKeyfile() {
             // back to NPM project instead.
             const vaultNpmRoot = await npm.getRoot(dirname(vaultPath));
             const keyfileNpmRoot = await npm.getRoot(dirname(keyfilePath));
-            const sameNpm =
-                vaultNpmRoot !== false &&
-                keyfileNpmRoot !== false &&
-                vaultNpmRoot === keyfileNpmRoot;
+            const sameNpm = vaultNpmRoot !== false && vaultNpmRoot === keyfileNpmRoot;
             if (sameNpm) {
                 throw new Error('Vault and keyfile are in the same NPM project @ ' + vaultNpmRoot);
             }

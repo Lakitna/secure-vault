@@ -27,10 +27,7 @@ export function credentialRequireExpiration() {
             }
             return true;
         })
-        .define(({ config, credential }) => {
-            if (config.credentialRestrictions.requireExpiration === false) {
-                return true;
-            }
+        .define(({ credential }) => {
             return credential.hasExpiration;
         })
         .punishment(() => {

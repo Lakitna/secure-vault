@@ -118,4 +118,5 @@ dist
 tmp
 *.tmp.*
 build
-.vision-stress
+.stryker-tmp
+reports

@@ -1,19 +1,40 @@
 import { expect } from 'chai';
 import path from 'node:path';
-import Rulebook from 'rulebound';
+import Rulebook, { Rule } from 'rulebound';
 import sinon from 'sinon';
-import { vaultRuleParameters } from '../../../../src/security-checker';
-import { keepassVaultStoredWithKeyfile } from '../../../../src/security-checker/vault/keepass/vault-stored-with-keyfile';
-import git from '../../../../src/util/git';
-import npm from '../../../../src/util/npm';
-import { getBaseVault } from '../../support/base-vault';
-import { vaultRuleParams } from '../../support/vault-rule-param';
+import { vaultRuleParameters } from '../../../../../src/security-checker';
+import { keepassVaultStoredWithKeyfile } from '../../../../../src/security-checker/vault/keepass/vault-stored-with-keyfile';
+import git from '../../../../../src/util/git';
+import npm from '../../../../../src/util/npm';
+import { getBaseVault } from '../../../support/base-vault';
+import { vaultRuleParams } from '../../../support/vault-rule-param';
 
 describe('Vault security check: vault stored with keyfile', () => {
     const vault = getBaseVault();
-    const rule = keepassVaultStoredWithKeyfile();
     const rulebook = new Rulebook<vaultRuleParameters>();
-    rulebook.add(rule);
+    let rule: Rule<vaultRuleParameters>;
+
+    beforeEach(() => {
+        rule = keepassVaultStoredWithKeyfile();
+        rulebook.add(rule);
+    });
+
+    afterEach(() => {
+        rulebook.rules = [];
+    });
+
+    after(async () => {
+        const params = await vaultRuleParams(vault);
+        params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = true;
+    });
+
+    it('has a description', async () => {
+        expect(rulebook.rules.length).to.equal(1);
+
+        const rule = rulebook.rules[0];
+        expect(rule.description).to.be.a('string');
+        expect(rule.description?.length).to.be.above(0);
+    });
 
     it('does not throw if no keyfile is used', async () => {
         const params = await vaultRuleParams(vault);
@@ -24,18 +45,46 @@ describe('Vault security check: vault stored with keyfile', () => {
         await rulebook.enforce(rule.name, params);
     });
 
-    it('does not throw if config allows the vault to be stored with the keyfile', async () => {
-        const params = await vaultRuleParams(vault);
+    it('disables if config allows the vault to be stored with the keyfile', async () => {
+        rule.on('enforce', () => {
+            throw new Error('Should not be enforced');
+        });
 
+        // @ts-expect-error Accessing a private var
+        const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
+
+        const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = true;
 
         await rulebook.enforce(rule.name, params);
+
+        expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
+            'Rule disabled: Disabled by security config `allowVaultAndKeyfileSameLocation`'
+        );
+    });
+
+    it('disables if config no keyfile is defined', async () => {
+        rule.on('enforce', () => {
+            throw new Error('Should not be enforced');
+        });
+
+        // @ts-expect-error Accessing a private var
+        const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
+
+        const params = await vaultRuleParams(vault);
+        params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
+        params.vaultCredential.keyfilePath = '';
+
+        await rulebook.enforce(rule.name, params);
+
+        expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
+            'Rule disabled: No keyfile defined'
+        );
     });
 
     context('Git repo', () => {
         it('throws when the vault is in the same git repo as the keyfile', async () => {
             const params = await vaultRuleParams(vault);
-
             params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
             params.vaultCredential.keyfilePath = vault.path;
 

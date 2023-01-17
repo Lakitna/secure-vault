@@ -1,5 +1,6 @@
 import { expect } from 'chai';
-import Rulebook from 'rulebound';
+import Rulebook, { Rule } from 'rulebound';
+import * as sinon from 'sinon';
 import { SecretValue } from '../../../../../../src';
 import { credentialRuleParameters } from '../../../../../../src/security-checker';
 import { credentialPasswordComplexityForbidUsername } from '../../../../../../src/security-checker/credential/password/complexity/forbid-username';
@@ -8,13 +9,29 @@ import { credentialRuleParam } from '../../../../support/credential-rule-param';
 
 describe('Credential security check: credential password forbid username', () => {
     const vault = getBaseVault();
-    const rule = credentialPasswordComplexityForbidUsername();
     const rulebook = new Rulebook<credentialRuleParameters>();
-    rulebook.add(rule);
+    let rule: Rule<credentialRuleParameters>;
+
+    beforeEach(() => {
+        rule = credentialPasswordComplexityForbidUsername();
+        rulebook.add(rule);
+    });
+
+    afterEach(() => {
+        rulebook.rules = [];
+    });
 
     after(async () => {
         const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.passwordComplexity.forbidUsername = false;
+    });
+
+    it('has a description', async () => {
+        expect(rulebook.rules.length).to.equal(1);
+
+        const rule = rulebook.rules[0];
+        expect(rule.description).to.be.a('string');
+        expect(rule.description?.length).to.be.above(0);
     });
 
     it('throws when the username contains the password', async () => {
@@ -42,14 +59,24 @@ describe('Credential security check: credential password forbid username', () =>
         );
     });
 
-    it('does not throw when the config is false', async () => {
-        const params = await credentialRuleParam(vault);
+    it('disables when the config is false', async () => {
+        rule.on('enforce', () => {
+            throw new Error('Should not be enforced');
+        });
 
+        // @ts-expect-error Accessing a private var
+        const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
+
+        const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.passwordComplexity.forbidUsername = false;
         params.credential.data.password = new SecretValue('string', 'lorum-ipsum');
         params.credential.data.username = 'lorum';
 
         await rulebook.enforce(rule.name, params);
+
+        expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
+            'Rule disabled: Disabled by security config `forbidUsername`'
+        );
     });
 
     it('does not throw when the password is different from the username', async () => {
@@ -62,17 +89,34 @@ describe('Credential security check: credential password forbid username', () =>
         await rulebook.enforce(rule.name, params);
     });
 
-    it('does not throw when there is no username', async () => {
-        const params = await credentialRuleParam(vault);
+    it('disables when there is no username', async () => {
+        rule.on('enforce', () => {
+            throw new Error('Should not be enforced');
+        });
 
+        // @ts-expect-error Accessing a private var
+        const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
+
+        const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.passwordComplexity.forbidUsername = true;
         params.credential.data.password = new SecretValue('string', 'lorum-ipsum');
         params.credential.data.username = '';
 
         await rulebook.enforce(rule.name, params);
+
+        expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
+            'Rule disabled: No username, nothing to check'
+        );
     });
 
-    it('does not throw when there is no password', async () => {
+    it('disables when there is no password', async () => {
+        rule.on('enforce', () => {
+            throw new Error('Should not be enforced');
+        });
+
+        // @ts-expect-error Accessing a private var
+        const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
+
         const params = await credentialRuleParam(vault);
 
         params.config.credentialRestrictions.passwordComplexity.forbidUsername = true;
@@ -80,15 +124,62 @@ describe('Credential security check: credential password forbid username', () =>
         params.credential.data.username = 'my-username';
 
         await rulebook.enforce(rule.name, params);
+
+        expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
+            'Rule disabled: No password, nothing to check'
+        );
     });
 
     it('does not throw when the username email domain matches', async () => {
         const params = await credentialRuleParam(vault);
-
         params.config.credentialRestrictions.passwordComplexity.forbidUsername = true;
         params.credential.data.password = new SecretValue('string', 'gmail');
         params.credential.data.username = 'my-username@gmail.com';
 
         await rulebook.enforce(rule.name, params);
+    });
+
+    it('throws when the username is not quite email-like and matches the password', async () => {
+        const params = await credentialRuleParam(vault);
+        params.config.credentialRestrictions.passwordComplexity.forbidUsername = true;
+        params.credential.data.password = new SecretValue('string', 'email');
+        params.credential.data.username = 'not@email';
+
+        await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
+            `Password contains (part of) username`
+        );
+    });
+
+    it('throws when the username starts with @ and matches the password', async () => {
+        const params = await credentialRuleParam(vault);
+        params.config.credentialRestrictions.passwordComplexity.forbidUsername = true;
+        params.credential.data.password = new SecretValue('string', 'email');
+        params.credential.data.username = '@not@email';
+
+        await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
+            `Password contains (part of) username`
+        );
+    });
+
+    it('throws when the username inclues @ but no top-leevl domain and matches the password', async () => {
+        const params = await credentialRuleParam(vault);
+        params.config.credentialRestrictions.passwordComplexity.forbidUsername = true;
+        params.credential.data.password = new SecretValue('string', 'gmail');
+        params.credential.data.username = 'my-username@gmail';
+
+        await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
+            `Password contains (part of) username`
+        );
+    });
+
+    it('thows when the username starts with @ and matches the password', async () => {
+        const params = await credentialRuleParam(vault);
+        params.config.credentialRestrictions.passwordComplexity.forbidUsername = true;
+        params.credential.data.password = new SecretValue('string', 'gmail');
+        params.credential.data.username = '@gmail';
+
+        await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
+            `Password contains (part of) username`
+        );
     });
 });
