@@ -26,7 +26,7 @@ export default [
         ],
         plugins: [
             /**
-             * Copy select files to be used in the output as a static file.
+             * Copy selected static files and assets to the output folder.
              */
             copy({
                 targets: [
@@ -42,7 +42,10 @@ export default [
              */
             typescript(),
 
-            // Remove things like comments and whitespace
+            /**
+             * Remove comments, docstrings, and whitespace. We will ship docstrings as part of the
+             * types instead.
+             */
             cleanup({
                 extensions: ['.ts', '.js'],
             }),
@@ -65,15 +68,14 @@ export default [
             },
         ],
         plugins: [
-            // Generate types (.d.ts)
+            /**
+             * Generate bundled types (.d.ts)
+             */
             dts(),
 
             /**
              * Mark all dependencies and node defaults as external to prevent
-             * Rollup from including them in the bundle. We'll let the package
-             * manager take care of dependency resolution and stuff so we don't
-             * have to download the exact same code multiple times, once in
-             * this bundle and also as a dependency of another package.
+             * Rollup from including them in the bundle.
              */
             externals(),
         ],

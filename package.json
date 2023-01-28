@@ -19,7 +19,9 @@
     "lint:fix": "npm run lint -- --fix",
     "format:fix": "prettier **/*.ts --write",
     "format:check": "prettier **/*.ts --check",
-    "test": "c8 ts-mocha --project tsconfig.test.json -n loader=ts-node/esm",
+    "test": "ts-mocha --project tsconfig.test.json -n loader=ts-node/esm",
+    "test:watch": "nodemon --watch ./src --watch ./test --ext ts,js,json,yaml --exec \"npm test\"",
+    "test:coverage": "c8 npm test",
     "test:mutation": "stryker run"
   },
   "keywords": [],
@@ -45,6 +47,7 @@
     "choma": "^1.2.1",
     "eslint": "~8.29.0",
     "mocha": "^10.2.0",
+    "nodemon": "^2.0.20",
     "prettier": "^2.8.1",
     "rollup": "^3.7.3",
     "rollup-plugin-cleanup": "^3.2.1",
