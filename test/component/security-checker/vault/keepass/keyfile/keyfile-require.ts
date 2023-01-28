@@ -37,7 +37,7 @@ describe('Vault security check: require keyfile', () => {
         const params = await vaultRuleParams(vault);
 
         params.config.vaultRestrictions.requireKeyfile = true;
-        params.vaultCredential.keyfilePath = undefined;
+        params.vaultPaths.keyfile = undefined;
 
         await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
             'Vault requires keyfile as second authentication factor'
@@ -48,7 +48,7 @@ describe('Vault security check: require keyfile', () => {
         const params = await vaultRuleParams(vault);
 
         params.config.vaultRestrictions.requireKeyfile = true;
-        params.vaultCredential.keyfilePath = 'path/to/keyfile';
+        params.vaultPaths.keyfile = 'path/to/keyfile';
 
         await rulebook.enforce(rule.name, params);
     });
@@ -63,7 +63,7 @@ describe('Vault security check: require keyfile', () => {
 
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.requireKeyfile = false;
-        params.vaultCredential.keyfilePath = undefined;
+        params.vaultPaths.keyfile = undefined;
 
         await rulebook.enforce(rule.name, params);
 

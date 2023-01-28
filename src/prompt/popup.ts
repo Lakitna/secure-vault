@@ -1,7 +1,8 @@
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { userPasswordPrompt, VaultCredential } from '../config/vault-password-prompt';
+import { VaultPasswordPromptConfig } from '../config/security';
+import { BaseVaultCredential, userPasswordPrompt } from '../config/vault-password-prompt';
 import { SecretValue } from '../secret-value';
 
 // TODO: The childprocess sends the password in base64 to here. See if it can be encrypted with a
@@ -15,9 +16,8 @@ import { SecretValue } from '../secret-value';
 export const promptPopup: userPasswordPrompt = async function (
     keepassVaultPath: string,
     keyfilePath: string | undefined,
-    allowPasswordSave: boolean,
-    passwordSaveDefault: boolean
-): Promise<VaultCredential> {
+    promptConfig: VaultPasswordPromptConfig
+): Promise<BaseVaultCredential> {
     const isWindows = process.platform === 'win32';
     if (!isWindows) {
         console.log(
@@ -31,8 +31,8 @@ export const promptPopup: userPasswordPrompt = async function (
     const output = await promptUser(
         keepassVaultPath,
         keyfilePath,
-        allowPasswordSave,
-        passwordSaveDefault
+        promptConfig.allowPasswordSave,
+        promptConfig.passwordSaveDefault
     );
 
     if (
@@ -46,8 +46,6 @@ export const promptPopup: userPasswordPrompt = async function (
     }
 
     return {
-        path: output.vault,
-        keyfilePath: output.keyfile,
         password: new SecretValue<string>(
             'string',
             Buffer.from(output.password, 'base64').toString('utf-8')

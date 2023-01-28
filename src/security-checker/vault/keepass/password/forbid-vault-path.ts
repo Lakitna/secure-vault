@@ -29,8 +29,8 @@ export function keepassVaultPasswordComplexityCharacterForbidVaultPath() {
 
             return true;
         })
-        .define(async ({ vaultCredential }) => {
-            const vaultPath = vaultCredential.path;
+        .define(async ({ vaultCredential, vaultPaths }) => {
+            const vaultPath = vaultPaths.vault;
             const password = vaultCredential.password;
 
             const match = detectPartialStringMatch(password, vaultPath, 'strict');

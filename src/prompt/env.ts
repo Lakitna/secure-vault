@@ -1,11 +1,11 @@
 import kdbx from 'kdbxweb';
-import { userPasswordPrompt } from '../config/vault-password-prompt';
+import { BaseVaultCredential, userPasswordPrompt } from '../config/vault-password-prompt';
 import { SecretValue } from '../secret-value';
 
-export const promptEnvironmentVariable: userPasswordPrompt = async (
+export const promptEnvironmentVariable: userPasswordPrompt = async function (
     keepassVaultPath: string,
     keyfilePath: string | undefined
-) => {
+): Promise<BaseVaultCredential> {
     let vault = process.env.KEEPASS_VAULT_PATH;
     if (!vault) {
         console.log('Missing environment variable KEEPASS_VAULT_PATH, using config value:');
@@ -26,8 +26,6 @@ export const promptEnvironmentVariable: userPasswordPrompt = async (
     }
 
     return {
-        path: vault,
-        keyfilePath: keyfile,
         password: new SecretValue<string>('string', kdbx.ProtectedValue.fromString(password)),
         savePassword: false,
     };

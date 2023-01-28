@@ -39,7 +39,7 @@ describe('Vault security check: vault password forbid vault path', () => {
 
         params.config.vaultRestrictions.passwordComplexity.forbidVaultPath = true;
         params.vaultCredential.password = new SecretValue('string', 'lorum-ipsum');
-        params.vaultCredential.path = '/some/file/path/lorum/ipsum.kdbx';
+        params.vaultPaths.vault = '/some/file/path/lorum/ipsum.kdbx';
 
         await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
             `Vault password contains (part of) the vault file path`
@@ -57,7 +57,7 @@ describe('Vault security check: vault password forbid vault path', () => {
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.passwordComplexity.forbidVaultPath = false;
         params.vaultCredential.password = new SecretValue('string', 'lorum-ipsum');
-        params.vaultCredential.path = '/some/file/path/lorum/ipsum.kdbx';
+        params.vaultPaths.vault = '/some/file/path/lorum/ipsum.kdbx';
 
         await rulebook.enforce(rule.name, params);
 
@@ -71,7 +71,7 @@ describe('Vault security check: vault password forbid vault path', () => {
 
         params.config.vaultRestrictions.passwordComplexity.forbidVaultPath = true;
         params.vaultCredential.password = new SecretValue('string', 'lorum-ipsum');
-        params.vaultCredential.path = '/some/file/path/vault.kdbx';
+        params.vaultPaths.vault = '/some/file/path/vault.kdbx';
 
         await rulebook.enforce(rule.name, params);
     });
@@ -87,7 +87,7 @@ describe('Vault security check: vault password forbid vault path', () => {
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.passwordComplexity.forbidVaultPath = true;
         params.vaultCredential.password = new SecretValue('string', '');
-        params.vaultCredential.path = '/some/file/path/vault.kdbx';
+        params.vaultPaths.vault = '/some/file/path/vault.kdbx';
 
         await rulebook.enforce(rule.name, params);
 

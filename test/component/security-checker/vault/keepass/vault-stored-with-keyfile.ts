@@ -40,7 +40,7 @@ describe('Vault security check: vault stored with keyfile', () => {
         const params = await vaultRuleParams(vault);
 
         params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
-        params.vaultCredential.keyfilePath = undefined;
+        params.vaultPaths.keyfile = undefined;
 
         await rulebook.enforce(rule.name, params);
     });
@@ -73,7 +73,7 @@ describe('Vault security check: vault stored with keyfile', () => {
 
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
-        params.vaultCredential.keyfilePath = '';
+        params.vaultPaths.keyfile = '';
 
         await rulebook.enforce(rule.name, params);
 
@@ -86,7 +86,7 @@ describe('Vault security check: vault stored with keyfile', () => {
         it('throws when the vault is in the same git repo as the keyfile', async () => {
             const params = await vaultRuleParams(vault);
             params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
-            params.vaultCredential.keyfilePath = vault.path;
+            params.vaultPaths.keyfile = vault.path;
 
             sinon.stub(git, 'getRoot').resolves('my/git/root/path');
 
@@ -102,7 +102,7 @@ describe('Vault security check: vault stored with keyfile', () => {
                 const params = await vaultRuleParams(vault);
 
                 params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
-                params.vaultCredential.keyfilePath = vault.path;
+                params.vaultPaths.keyfile = vault.path;
 
                 sinon.stub(git, 'getRoot').resolves('my/git/root/path');
                 sinon
@@ -123,7 +123,7 @@ describe('Vault security check: vault stored with keyfile', () => {
                 const params = await vaultRuleParams(vault);
 
                 params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
-                params.vaultCredential.keyfilePath = vault.path;
+                params.vaultPaths.keyfile = vault.path;
 
                 sinon.stub(git, 'getRoot').resolves('my/git/root/path');
                 sinon
@@ -141,7 +141,7 @@ describe('Vault security check: vault stored with keyfile', () => {
             const params = await vaultRuleParams(vault);
 
             params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
-            params.vaultCredential.keyfilePath = 'some/amazing/random/path';
+            params.vaultPaths.keyfile = 'some/amazing/random/path';
 
             sinon
                 .stub(git, 'getRoot')
@@ -167,7 +167,7 @@ describe('Vault security check: vault stored with keyfile', () => {
             const params = await vaultRuleParams(vault);
 
             params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
-            params.vaultCredential.keyfilePath = vault.path;
+            params.vaultPaths.keyfile = vault.path;
 
             sinon.stub(npm, 'getRoot').resolves('my/npm/root/path');
 
@@ -180,7 +180,7 @@ describe('Vault security check: vault stored with keyfile', () => {
             const params = await vaultRuleParams(vault);
 
             params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
-            params.vaultCredential.keyfilePath = 'some/amazing/random/path';
+            params.vaultPaths.keyfile = 'some/amazing/random/path';
 
             sinon
                 .stub(npm, 'getRoot')
@@ -214,10 +214,7 @@ describe('Vault security check: vault stored with keyfile', () => {
             const params = await vaultRuleParams(vault);
 
             params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
-            params.vaultCredential.keyfilePath = path.join(
-                path.dirname(vault.path),
-                './keyfile.xml'
-            );
+            params.vaultPaths.keyfile = path.join(path.dirname(vault.path), './keyfile.xml');
 
             await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
                 'Vault and keyfile are in the same directory @ ' + path.dirname(vault.path)
@@ -228,7 +225,7 @@ describe('Vault security check: vault stored with keyfile', () => {
             const params = await vaultRuleParams(vault);
 
             params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
-            params.vaultCredential.keyfilePath = 'some/amazing/random/path';
+            params.vaultPaths.keyfile = 'some/amazing/random/path';
 
             await rulebook.enforce(rule.name, params);
         });

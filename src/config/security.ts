@@ -31,10 +31,15 @@ export interface SecurityConfig {
     credentialRestrictions:
         | securityCredentialRestrictionPresetNames
         | RecursivePartial<SecurityCredentialRestriction>;
+
+    prompt: VaultPasswordPromptConfig;
+}
+
+export interface VaultPasswordPromptConfig {
     /**
      * Method for prompting the user for the vault master password.
      */
-    passwordPromptMethod: vaultPasswordPromptPresetNames | userPasswordPrompt;
+    method: vaultPasswordPromptPresetNames | userPasswordPrompt;
     /**
      * Allow the password to be saved in the operating systems credential manager.
      * Adds an option to the user prompt method where possible.
@@ -49,7 +54,7 @@ export interface SecurityConfig {
 export interface ResolvedSecurityConfig extends SecurityConfig {
     vaultRestrictions: SecurityVaultRestriction;
     credentialRestrictions: SecurityCredentialRestriction;
-    passwordPromptMethod: userPasswordPrompt;
+    prompt: VaultPasswordPromptConfig & { method: userPasswordPrompt };
 }
 
 export const securityConfigPresets = {
@@ -57,36 +62,44 @@ export const securityConfigPresets = {
         _presetName: 'none',
         vaultRestrictions: securityVaultRestrictionPresets.none,
         credentialRestrictions: securityCredentialRestrictionPresets.none,
-        passwordPromptMethod: vaultPasswordPromptPresets.cli,
-        allowPasswordSave: true,
-        passwordSaveDefault: true,
+        prompt: {
+            method: vaultPasswordPromptPresets.cli,
+            allowPasswordSave: true,
+            passwordSaveDefault: true,
+        },
         readonly: true,
     } as ResolvedSecurityConfig,
     basic: {
         _presetName: 'basic',
         vaultRestrictions: securityVaultRestrictionPresets.basic,
         credentialRestrictions: securityCredentialRestrictionPresets.basic,
-        passwordPromptMethod: vaultPasswordPromptPresets.popup,
-        allowPasswordSave: true,
-        passwordSaveDefault: false,
+        prompt: {
+            method: vaultPasswordPromptPresets.popup,
+            allowPasswordSave: true,
+            passwordSaveDefault: false,
+        },
         readonly: true,
     } as ResolvedSecurityConfig,
     good: {
         _presetName: 'good',
         vaultRestrictions: securityVaultRestrictionPresets.good,
         credentialRestrictions: securityCredentialRestrictionPresets.good,
-        passwordPromptMethod: vaultPasswordPromptPresets.popup,
-        allowPasswordSave: false,
-        passwordSaveDefault: false,
+        prompt: {
+            method: vaultPasswordPromptPresets.popup,
+            allowPasswordSave: false,
+            passwordSaveDefault: false,
+        },
         readonly: true,
     } as ResolvedSecurityConfig,
     better: {
         _presetName: 'better',
         vaultRestrictions: securityVaultRestrictionPresets.better,
         credentialRestrictions: securityCredentialRestrictionPresets.better,
-        passwordPromptMethod: vaultPasswordPromptPresets.popup,
-        allowPasswordSave: false,
-        passwordSaveDefault: false,
+        prompt: {
+            method: vaultPasswordPromptPresets.popup,
+            allowPasswordSave: false,
+            passwordSaveDefault: false,
+        },
         readonly: true,
     } as ResolvedSecurityConfig,
 } as const;
@@ -109,9 +122,8 @@ export function resolveSecurityConfig(
         delete securityConfig._presetName;
     }
 
-    if (typeof securityConfig.passwordPromptMethod === 'string') {
-        securityConfig.passwordPromptMethod =
-            vaultPasswordPromptPresets[securityConfig.passwordPromptMethod];
+    if (typeof securityConfig.prompt.method === 'string') {
+        securityConfig.prompt.method = vaultPasswordPromptPresets[securityConfig.prompt.method];
     }
 
     securityConfig.vaultRestrictions = resolveSecurityConfigVaultRestrictions(

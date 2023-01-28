@@ -1,7 +1,7 @@
 import { Kdbx } from 'kdbxweb';
 import { Rulebook, RulebookConfig, RuleError } from 'rulebound';
 import { ResolvedSecurityConfig } from '../config/security';
-import { VaultCredential } from '../config/vault-password-prompt';
+import { BaseVaultCredential } from '../config/vault-password-prompt';
 import { Credential } from '../credentials';
 import { CredentialRuleError } from '../error/credential-error';
 import { VaultRuleError } from '../error/vault-error';
@@ -75,7 +75,8 @@ export async function checkCredentialSecurity(
 export interface vaultRuleParameters {
     config: ResolvedSecurityConfig;
     vault: Kdbx;
-    vaultCredential: VaultCredential;
+    vaultCredential: BaseVaultCredential;
+    vaultPaths: { vault: string; keyfile: string | undefined };
 }
 
 let vaultRuleset: Rulebook<vaultRuleParameters>;
@@ -102,17 +103,18 @@ function getVaultRuleset(config: Partial<RulebookConfig>) {
 }
 
 export async function checkVaultSecurity(
+    logLevel: RulebookConfig['verboseness'],
     config: ResolvedSecurityConfig,
     vault: Kdbx,
-    vaultCredential: VaultCredential
+    vaultCredential: BaseVaultCredential,
+    vaultPaths: { vault: string; keyfile: string | undefined }
 ): Promise<void> {
     const rulebook = await getVaultRuleset({
-        // TODO: Get loglevel from somehwere
-        // verboseness: 'info',
+        verboseness: logLevel,
     });
 
     try {
-        await rulebook.enforce('**/*', { config, vault, vaultCredential });
+        await rulebook.enforce('**/*', { config, vault, vaultCredential, vaultPaths });
     } catch (error) {
         if (error instanceof RuleError) {
             throw new VaultRuleError(vault, error);

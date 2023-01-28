@@ -30,6 +30,7 @@ $vaultLocationBox.Text = $vaultPath
 $vaultLocationBox.Location = New-Object System.Drawing.Point(15,25)
 $vaultLocationBox.Size = New-Object System.Drawing.Size(275,30)
 $vaultLocationBox.BackColor = "LightGray"
+$vaultLocationBox.ReadOnly = $true;
 $form.Controls.Add($vaultLocationBox)
 
 
@@ -44,6 +45,7 @@ $keyfilePathBox.Text = $keyfilePath
 $keyfilePathBox.Location = New-Object System.Drawing.Point(15,65)
 $keyfilePathBox.Size = New-Object System.Drawing.Size(275,30)
 $keyfilePathBox.BackColor = "LightGray"
+$keyfilePathBox.ReadOnly = $true;
 $form.Controls.Add($keyfilePathBox)
 
 

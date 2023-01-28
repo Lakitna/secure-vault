@@ -2,20 +2,18 @@ import { promptCli } from '../prompt/cli';
 import { promptEnvironmentVariable } from '../prompt/env';
 import { promptPopup } from '../prompt/popup';
 import { SecretValue } from '../secret-value';
+import { VaultPasswordPromptConfig } from './security';
 
 export type vaultPasswordPromptPresetNames = keyof typeof vaultPasswordPromptPresets;
 
 export type userPasswordPrompt = (
     keepassVaultPath: string,
     keyfilePath: string | undefined,
-    allowPasswordSave: boolean,
-    passwordSaveDefault: boolean
-) => Promise<VaultCredential>;
+    promptConfig: VaultPasswordPromptConfig
+) => Promise<BaseVaultCredential>;
 
-export interface VaultCredential {
-    path: string;
+export interface BaseVaultCredential {
     password: SecretValue<string>;
-    keyfilePath: string | undefined;
     savePassword: boolean;
 }
 

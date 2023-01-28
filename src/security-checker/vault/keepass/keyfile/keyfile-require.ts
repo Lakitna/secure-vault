@@ -22,8 +22,8 @@ export function keepassVaultKeyfileRequire() {
             }
             return true;
         })
-        .define(({ vaultCredential }) => {
-            return vaultCredential.keyfilePath !== undefined;
+        .define(({ vaultPaths }) => {
+            return vaultPaths.keyfile !== undefined;
         })
         .punishment(() => {
             throw new Error(`Vault requires keyfile as second authentication factor`);

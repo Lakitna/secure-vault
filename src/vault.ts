@@ -5,7 +5,9 @@ import {
     SecurityConfig,
     securityConfigPresetNames,
 } from './config/security';
+import { BaseVaultCredential } from './config/vault-password-prompt';
 import { Credential, CredentialData, CredentialWithoutSecrets } from './credentials';
+import { getRememberedPassword, rememberPassword } from './prompt/remember-password';
 import { SecretValue } from './secret-value';
 
 export interface VaultOptions {
@@ -39,7 +41,7 @@ export type GetCredentialOptions = {
 export abstract class Vault {
     public readonly: VaultOptions['readonly'];
     public securityConfig: ResolvedSecurityConfig;
-    public logLevel?: VaultOptions['logLevel'];
+    public logLevel: VaultOptions['logLevel'];
 
     constructor(options: Partial<VaultOptions> = {}) {
         this.readonly = options.readonly ?? true;
@@ -106,4 +108,34 @@ export abstract class Vault {
      * Delete a credential.
      */
     public abstract deleteCredential(credential: Credential): Promise<void>;
+
+    /**
+     * Get the secrets to open the vault using the prompt method.
+     */
+    public async getVaultCredential(
+        vaultId: string,
+        openTryCount: number,
+        boundUserPrompt: () => Promise<BaseVaultCredential>
+    ): Promise<BaseVaultCredential> {
+        // Only use remembered vault password on the first try. Otherwise we'll get stuck in an
+        // infinite loop of bad vault passwords.
+        if (openTryCount === 0 && this.securityConfig.prompt.allowPasswordSave) {
+            const rememberedPass = await getRememberedPassword(vaultId);
+            if (rememberedPass instanceof SecretValue) {
+                console.log('Using remembered vault password');
+                return {
+                    password: rememberedPass,
+                    savePassword: false,
+                };
+            }
+        }
+
+        const vaultCredential = await boundUserPrompt();
+        if (vaultCredential.savePassword) {
+            await rememberPassword(vaultId, vaultCredential.password);
+            console.log('✅ Saved password');
+        }
+
+        return vaultCredential;
+    }
 }

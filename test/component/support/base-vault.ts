@@ -7,10 +7,8 @@ export function getBaseVault() {
         { securityConfig: 'none' }
     );
 
-    vault.securityConfig.passwordPromptMethod = async (keepassVaultPath, keyfilePath) => ({
-        path: keepassVaultPath,
+    vault.securityConfig.prompt.method = async () => ({
         password: new SecretValue('string', 'test-vault-password'),
-        keyfilePath: keyfilePath,
         savePassword: false,
     });
 

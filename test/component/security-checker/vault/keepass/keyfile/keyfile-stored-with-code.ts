@@ -39,7 +39,7 @@ describe('Vault security check: keyfile stored with code', () => {
 
         params.config.vaultRestrictions.allowKeyfileWithCode = false;
         const stub = sinon.stub(file, 'fileWithCode').resolves(true);
-        params.vaultCredential.keyfilePath = 'path/to/keyfile';
+        params.vaultPaths.keyfile = 'path/to/keyfile';
 
         await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
             'Keyfile is stored with source code'
@@ -52,7 +52,7 @@ describe('Vault security check: keyfile stored with code', () => {
 
         params.config.vaultRestrictions.allowKeyfileWithCode = false;
         const stub = sinon.stub(file, 'fileWithCode').resolves(false);
-        params.vaultCredential.keyfilePath = 'path/to/keyfile';
+        params.vaultPaths.keyfile = 'path/to/keyfile';
 
         await rulebook.enforce(rule.name, params);
         expect(stub).to.have.been.called;
@@ -69,7 +69,7 @@ describe('Vault security check: keyfile stored with code', () => {
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.allowKeyfileWithCode = true;
         const stub = sinon.stub(file, 'fileWithCode').resolves(true);
-        params.vaultCredential.keyfilePath = 'path/to/keyfile';
+        params.vaultPaths.keyfile = 'path/to/keyfile';
 
         await rulebook.enforce(rule.name, params);
         expect(stub).to.not.have.been.called;
@@ -90,7 +90,7 @@ describe('Vault security check: keyfile stored with code', () => {
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.allowKeyfileWithCode = false;
         const stub = sinon.stub(file, 'fileWithCode').resolves(true);
-        params.vaultCredential.keyfilePath = undefined;
+        params.vaultPaths.keyfile = undefined;
 
         await rulebook.enforce(rule.name, params);
         expect(stub).to.not.have.been.called;

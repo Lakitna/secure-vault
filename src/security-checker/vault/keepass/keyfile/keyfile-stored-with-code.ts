@@ -23,20 +23,20 @@ export function keepassVaultKeyfileStoredWithCode() {
             Any symlinks are resolved recursively. Only the actual file path is used.
             `
         )
-        .enable(({ config, vaultCredential }) => {
+        .enable(({ config, vaultPaths }) => {
             if (config.vaultRestrictions.allowKeyfileWithCode === true) {
                 return 'Disabled by security config `allowKeyfileWithCode`';
             }
 
-            if (!vaultCredential.keyfilePath) {
+            if (!vaultPaths.keyfile) {
                 // We check elsewhere if a keyfile is required.
                 return 'No keyfile defined';
             }
 
             return true;
         })
-        .define(async ({ vaultCredential }) => {
-            const keyfilePath = await resolveSymlink(vaultCredential.keyfilePath as string);
+        .define(async ({ vaultPaths }) => {
+            const keyfilePath = await resolveSymlink(vaultPaths.keyfile as string);
             const keyfileWithCode = await file.fileWithCode(keyfilePath);
             return !keyfileWithCode;
         })

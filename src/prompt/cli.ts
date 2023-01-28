@@ -1,48 +1,17 @@
-import { accessSync, constants } from 'node:fs';
+import c from 'ansi-colors';
 import prompts from 'prompts';
-import { userPasswordPrompt, VaultCredential } from '../config/vault-password-prompt';
+import { VaultPasswordPromptConfig } from '../config/security';
+import { BaseVaultCredential, userPasswordPrompt } from '../config/vault-password-prompt';
 import { SecretValue } from '../secret-value';
 
 export const promptCli: userPasswordPrompt = async function (
     keepassVaultPath: string,
     keyfilePath: string | undefined,
-    allowPasswordSave: boolean,
-    passwordSaveDefault: boolean
-): Promise<VaultCredential> {
+    promptConfig: VaultPasswordPromptConfig
+): Promise<BaseVaultCredential> {
     const questions: prompts.PromptObject<
         'vaultPath' | 'keyfilePath' | 'password' | 'savePassword'
     >[] = [
-        {
-            type: 'text',
-            name: 'vaultPath',
-            message: 'KeePass vault path',
-            initial: keepassVaultPath,
-            validate: (input: string) => {
-                try {
-                    accessSync(input, constants.R_OK);
-                    return true;
-                } catch {
-                    return 'File does not exist';
-                }
-            },
-        },
-        {
-            type: 'text',
-            name: 'keyfilePath',
-            message: 'KeePass keyfile path',
-            initial: keyfilePath,
-            validate: (input: string) => {
-                if (input === '') {
-                    return true;
-                }
-                try {
-                    accessSync(input, constants.R_OK);
-                    return true;
-                } catch {
-                    return 'File does not exist';
-                }
-            },
-        },
         {
             type: 'password',
             name: 'password',
@@ -50,7 +19,7 @@ export const promptCli: userPasswordPrompt = async function (
         },
     ];
 
-    if (allowPasswordSave) {
+    if (promptConfig.allowPasswordSave) {
         const choiceYes = {
             title: 'Yes',
             value: true,
@@ -66,15 +35,21 @@ export const promptCli: userPasswordPrompt = async function (
             type: 'select',
             name: 'savePassword',
             message: 'Remember password?',
-            choices: passwordSaveDefault ? [choiceYes, choiceNo] : [choiceNo, choiceYes],
+            choices: promptConfig.passwordSaveDefault
+                ? [choiceYes, choiceNo]
+                : [choiceNo, choiceYes],
         });
     }
 
     console.clear();
     consoleLine();
-    console.log('Please provide KeePass vault credentials');
+    console.log('Please provide Keepass vault credentials');
     consoleLine();
     console.log();
+    console.log(`${c.gray('»')} Keepass vault path ${c.gray('...')} ${keepassVaultPath}`);
+    console.log(`${c.gray('»')} Keepass keyfile path ${c.gray('...')} ${keyfilePath}`);
+    console.log();
+
     const response = await prompts(questions, {
         onSubmit: () => {
             console.log();
@@ -86,8 +61,6 @@ export const promptCli: userPasswordPrompt = async function (
     consoleLine();
 
     return {
-        path: response.vaultPath as string,
-        keyfilePath: response.keyfilePath === '' ? undefined : (response.keyfilePath as string),
         password: new SecretValue<string>('string', response.password as string),
         savePassword: (response.savePassword as boolean | undefined) ?? false,
     };

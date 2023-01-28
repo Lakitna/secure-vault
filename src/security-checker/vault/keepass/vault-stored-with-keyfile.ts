@@ -25,23 +25,23 @@ export function keepassVaultStoredWithKeyfile() {
             Any symlinks are resolved recursively. Only the actual file paths are used.
             `
         )
-        .enable(async ({ config, vaultCredential }) => {
+        .enable(async ({ config, vaultPaths }) => {
             const allowVaultAndKeyfileSameLocation =
                 config.vaultRestrictions.allowVaultAndKeyfileSameLocation;
             if (allowVaultAndKeyfileSameLocation === true) {
                 return 'Disabled by security config `allowVaultAndKeyfileSameLocation`';
             }
 
-            if (!vaultCredential.keyfilePath) {
+            if (!vaultPaths.keyfile) {
                 // We check elsewhere if a keyfile is required.
                 return 'No keyfile defined';
             }
 
             return true;
         })
-        .define(async ({ vaultCredential }) => {
-            const vaultPath = await resolveSymlink(vaultCredential.path);
-            const keyfilePath = await resolveSymlink(vaultCredential.keyfilePath as string);
+        .define(async ({ vaultPaths }) => {
+            const vaultPath = await resolveSymlink(vaultPaths.vault);
+            const keyfilePath = await resolveSymlink(vaultPaths.keyfile as string);
 
             const vaultGitRoot = await git.getRoot(dirname(vaultPath));
             const keyfileGitRoot = await git.getRoot(dirname(keyfilePath));

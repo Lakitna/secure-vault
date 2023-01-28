@@ -4,9 +4,7 @@ import { readFile, writeFile } from 'fs/promises';
 import kdbxweb, { Kdbx } from 'kdbxweb';
 import { RulebookConfig } from 'rulebound';
 import { SecurityConfig, securityConfigPresetNames } from '../config/security';
-import { VaultCredential } from '../config/vault-password-prompt';
 import { Credential, CredentialData, CredentialWithoutSecrets } from '../credentials';
-import { getRememberedPassword, rememberPassword } from '../prompt/remember-password';
 import { SecretValue } from '../secret-value';
 import { checkCredentialSecurity, checkVaultSecurity } from '../security-checker';
 import { resolveSymlink } from '../util/resolve-symlink';
@@ -73,17 +71,26 @@ export class KeepassVault extends Vault {
             return this.vault;
         }
 
-        const vaultCredential = await this.getVaultCredential();
+        const vaultPath = await resolveSymlink(this.path);
+        const prompt = () =>
+            this.securityConfig.prompt.method(
+                this.path,
+                this.keyfilePath,
+                this.securityConfig.prompt
+            );
+        const vaultCredential = await this.getVaultCredential(vaultPath, this.openTries, prompt);
 
-        const vaultPath = await resolveSymlink(vaultCredential.path);
         const vaultFile = await readFile(vaultPath).catch((err) => {
             console.error(err instanceof Error ? err.stack : err);
-            throw new Error('Could not open vault');
+            throw new Error('Could not open vault file');
         });
 
-        let keyfile: ArrayBufferLike | undefined = undefined;
-        if (vaultCredential.keyfilePath) {
-            const keyfilePath = await resolveSymlink(vaultCredential.keyfilePath);
+        let keyfilePath: string | undefined;
+        if (this.keyfilePath) {
+            keyfilePath = await resolveSymlink(this.keyfilePath);
+        }
+        let keyfile: ArrayBufferLike | undefined;
+        if (keyfilePath) {
             keyfile = await readFile(keyfilePath)
                 .then((file) => file.buffer)
                 .catch((err) => {
@@ -98,7 +105,7 @@ export class KeepassVault extends Vault {
         try {
             vault = await kdbxweb.Kdbx.load(vaultFile.buffer, kdbxCredentials);
         } catch (err) {
-            if (this.openTries === 0 && this.securityConfig.allowPasswordSave) {
+            if (this.openTries === 0 && this.securityConfig.prompt.allowPasswordSave) {
                 console.log('Could not open vault. Retrying...');
                 this.openTries++;
                 return this.open();
@@ -108,7 +115,10 @@ export class KeepassVault extends Vault {
             throw new Error('Could not open the vault. This is probably a credentials issue');
         }
 
-        await checkVaultSecurity(this.securityConfig, vault, vaultCredential);
+        await checkVaultSecurity(this.logLevel, this.securityConfig, vault, vaultCredential, {
+            vault: vaultPath,
+            keyfile: keyfilePath,
+        });
 
         this.vault = vault;
         this.openTries = 0;
@@ -261,40 +271,6 @@ export class KeepassVault extends Vault {
         const vaultPath = await resolveSymlink(this.path);
 
         await writeFile(vaultPath, Buffer.from(fileContent));
-    }
-
-    /**
-     * Get the secrets to open the vault.
-     */
-    private async getVaultCredential(): Promise<VaultCredential> {
-        // Only use remembered vault password on the first try. Otherwise we'll get stuck in an
-        // infinite loop of bad vault passwords.
-        if (this.openTries === 0 && this.securityConfig.allowPasswordSave) {
-            const rememberedPass = await getRememberedPassword(this.path);
-            if (rememberedPass instanceof SecretValue) {
-                console.log('Using remembered vault password');
-                return {
-                    path: this.path,
-                    keyfilePath: this.keyfilePath,
-                    password: rememberedPass,
-                    savePassword: false,
-                };
-            }
-        }
-
-        const vaultCredential = await this.securityConfig.passwordPromptMethod(
-            this.path,
-            this.keyfilePath,
-            this.securityConfig.allowPasswordSave,
-            this.securityConfig.passwordSaveDefault
-        );
-
-        if (vaultCredential.savePassword) {
-            await rememberPassword(vaultCredential.path, vaultCredential.password);
-            console.log('✅ Saved password');
-        }
-
-        return vaultCredential;
     }
 
     private async getEntryById(
