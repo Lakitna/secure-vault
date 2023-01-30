@@ -89,6 +89,7 @@ describe('Vault security check: vault stored with keyfile', () => {
             params.vaultPaths.keyfile = vault.path;
 
             sinon.stub(git, 'getRoot').resolves('my/git/root/path');
+            sinon.stub(git, 'isIgnored').resolves(false);
 
             await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
                 'Vault and keyfile are in the same Git repository @ my/git/root/path'
@@ -149,6 +150,7 @@ describe('Vault security check: vault stored with keyfile', () => {
                 .resolves('my/git/root/path')
                 .onSecondCall()
                 .resolves('another/git/root/path');
+            sinon.stub(git, 'isIgnored').resolves(false);
 
             sinon.stub(npm, 'getRoot').resolves(false);
 
@@ -161,6 +163,7 @@ describe('Vault security check: vault stored with keyfile', () => {
             const gitGetRootStub = sinon.stub(git, 'getRoot');
             gitGetRootStub.onFirstCall().resolves('my/git/root/path');
             gitGetRootStub.onSecondCall().resolves('another/git/root/path');
+            sinon.stub(git, 'isIgnored').resolves(false);
         });
 
         it('throws when the vault is in the same npm project as the keyfile', async () => {
@@ -201,6 +204,7 @@ describe('Vault security check: vault stored with keyfile', () => {
                 .resolves('my/git/root/path')
                 .onSecondCall()
                 .resolves('another/git/root/path');
+            sinon.stub(git, 'isIgnored').resolves(false);
 
             sinon
                 .stub(npm, 'getRoot')
