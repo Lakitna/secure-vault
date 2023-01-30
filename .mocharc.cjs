@@ -6,7 +6,11 @@ const opts = {
     spec: ['./test/**/*.ts'],
     extensions: ['.ts'],
     recursive: true,
-    'node-option': ['loader=ts-node/esm', 'experimental-specifier-resolution=node'],
+    'node-option': [
+        'loader=ts-node/esm',
+        'loader=esmock',
+        'experimental-specifier-resolution=node',
+    ],
     'watch-files': ['./test/**/*.ts', './src/**/*.ts'],
 };
 

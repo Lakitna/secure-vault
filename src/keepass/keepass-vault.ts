@@ -78,7 +78,11 @@ export class KeepassVault extends Vault {
                 this.keyfilePath,
                 this.securityConfig.prompt
             );
-        const vaultCredential = await this.getVaultCredential(vaultPath, this.openTries, prompt);
+        const vaultCredential = await this.getVaultCredential(
+            vaultPath,
+            this.openTries === 0,
+            prompt
+        );
 
         const vaultFile = await readFile(vaultPath).catch((err) => {
             console.error(err instanceof Error ? err.stack : err);
