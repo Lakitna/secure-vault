@@ -17,6 +17,11 @@ export interface BaseVaultCredential {
     savePassword: boolean;
 }
 
+// export interface KeepassVaultCredential extends BaseVaultCredential {
+//     path: string;
+//     keyfilePath: string | undefined;
+// }
+
 export const vaultPasswordPromptPresets = {
     /**
      * Prompt the user from the command line.

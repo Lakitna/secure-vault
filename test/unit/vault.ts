@@ -5,7 +5,7 @@ import { SecretValue } from '../../src';
 import { BaseVaultCredential } from '../../src/config/vault-password-prompt';
 import { Vault, VaultOptions } from '../../src/vault';
 
-describe.only('Abstract vault', () => {
+describe('Abstract vault', () => {
     it('constructs with default config', () => {
         // @ts-expect-error Make instance of abstract class
         const vault = new Vault({});
