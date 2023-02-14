@@ -1,7 +1,9 @@
 import kdbx from 'kdbxweb';
 import util from 'node:util';
 
-export class SecretValue<T extends string | Uint8Array> {
+type secretValueTypes = string | Uint8Array;
+
+export class SecretValue<T extends secretValueTypes> {
     value: kdbx.ProtectedValue;
     private type;
 
@@ -9,7 +11,7 @@ export class SecretValue<T extends string | Uint8Array> {
      * Wrapper for values you want to keep secret.
      *
      * This is an obfuscation layer that prevents you from accidentally leaking the secret. It
-     * makes it harder to shoot yourself in your foot.
+     * makes it harder to shoot yourself in your foot, but not impossible.
      */
     constructor(
         type: T extends string ? 'string' : T extends Uint8Array ? 'binary' : never,
@@ -76,7 +78,7 @@ export class SecretValue<T extends string | Uint8Array> {
      *
      * Note: This will temporarily expose both secrets to allow full comparison
      */
-    equals(other: SecretValue<T>): boolean {
+    equals(other: SecretValue<secretValueTypes>): boolean {
         if (this.type !== other.type) {
             // Not the same type, so never the same.
             return false;
