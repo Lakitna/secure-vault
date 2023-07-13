@@ -12,9 +12,7 @@ const config = {
     testRunner: 'mocha',
     coverageAnalysis: 'perTest',
     ignoreStatic: true,
-
-    // TODO: keep or nah?
-    // timeoutMS: 50_000,
-    timeoutFactor: 500,
+    // Increase because we also run component tests with Stryker.
+    timeoutFactor: 250,
 };
 export default config;
