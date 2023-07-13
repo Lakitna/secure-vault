@@ -13,7 +13,11 @@ export function detectPartialStringMatch(
     strictness: 'strict' | 'normal' | 'loose' = 'normal'
 ): false | Fuse.FuseResult<string> {
     const minSubstringLength = 5;
-    const substringLengthStep = Math.floor(minSubstringLength / 2);
+    const minSubstringLengthStep = 2;
+
+    const minStringLength = Math.min(a.length, b.length);
+    const substringLengthStep = Math.max(minSubstringLengthStep, Math.floor(minStringLength / 5));
+
     let matchThreshold: number;
     switch (strictness) {
         case 'loose':
@@ -36,20 +40,17 @@ export function detectPartialStringMatch(
         threshold: matchThreshold,
         findAllMatches: false,
         includeMatches: false,
+        shouldSort: true,
     });
 
-    const match = bSubstrings.map((a) => matcher.search(a)).flat();
-    if (match.length === 0) {
-        return false;
+    for (const bSubstring of bSubstrings) {
+        const matches = matcher.search(bSubstring);
+
+        if (matches.length === 0) continue;
+        return matches[0];
     }
 
-    return match.sort((a, b) => {
-        if (a.score === undefined || b.score === undefined) return 0;
-
-        if (a.score > b.score) return 1;
-        if (a.score < b.score) return -1;
-        return 0;
-    })[0];
+    return false;
 }
 
 /**
@@ -77,7 +78,7 @@ function makePossibleSubstrings(
     }
 
     substrings.push(exposedString);
-    return substrings;
+    return substrings.reverse();
 }
 const makePossibleSubstringsMemoized = memoize(makePossibleSubstrings, {
     maxSize: 3,
