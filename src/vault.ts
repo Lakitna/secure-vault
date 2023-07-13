@@ -8,7 +8,11 @@ import {
 import { BaseVaultCredential } from './config/vault-password-prompt';
 import { Credential, CredentialData, CredentialWithoutSecrets } from './credentials';
 import { SecretValue } from './secret-value';
-import { getRememberedPassword, rememberPassword } from './util/remember-password';
+import {
+    forgetRememberedPassword,
+    getRememberedPassword,
+    rememberPassword,
+} from './util/remember-password';
 
 export interface VaultOptions {
     securityConfig: securityConfigPresetNames | Partial<SecurityConfig>;
@@ -119,14 +123,20 @@ export abstract class Vault {
     ): Promise<BaseVaultCredential> {
         // Only use remembered vault password on the first try. Otherwise we'll get stuck in an
         // infinite loop of bad vault passwords.
-        if (firstAttempt && this.securityConfig.prompt.allowPasswordSave) {
-            const rememberedPass = await getRememberedPassword(vaultId);
-            if (rememberedPass instanceof SecretValue) {
-                console.log('Using remembered vault password');
-                return {
-                    password: rememberedPass,
-                    savePassword: false,
-                };
+        if (firstAttempt) {
+            if (this.securityConfig.prompt.allowPasswordSave) {
+                const rememberedPass = await getRememberedPassword(vaultId);
+                if (rememberedPass instanceof SecretValue) {
+                    console.log('Using remembered vault password');
+                    return {
+                        password: rememberedPass,
+                        savePassword: false,
+                    };
+                }
+            } else {
+                // Clear a potentially stored password to reduce the chance of it lingering after
+                // config change.
+                await forgetRememberedPassword(vaultId);
             }
         }
 

@@ -20,3 +20,8 @@ export async function getRememberedPassword(
     }
     return new SecretValue('string', password);
 }
+
+export async function forgetRememberedPassword(vaultPath: string): Promise<void> {
+    await keytar.deletePassword(serviceName, path.normalize(vaultPath));
+    return;
+}
