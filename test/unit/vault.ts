@@ -37,6 +37,7 @@ describe('Abstract vault', () => {
         };
 
         it('prompts the user if password save is not allowed', async () => {
+            const forgetRememberedPasswordStub = sinon.stub();
             const getRememberedPasswordStub = sinon.stub();
             const rememberPasswordStub = sinon.stub();
             const mockedModule = await esmock(
@@ -44,6 +45,7 @@ describe('Abstract vault', () => {
                 import.meta.url,
                 {
                     '../../src/util/remember-password.ts': {
+                        forgetRememberedPassword: forgetRememberedPasswordStub,
                         getRememberedPassword: getRememberedPasswordStub,
                         rememberPassword: rememberPasswordStub,
                     },
@@ -61,6 +63,7 @@ describe('Abstract vault', () => {
             } as Partial<VaultOptions>);
             const result = await vault.getVaultCredential('vault-id', true, userPromptStub);
 
+            expect(forgetRememberedPasswordStub).to.have.been.calledOnce;
             expect(getRememberedPasswordStub).to.have.not.been.called;
             expect(userPromptStub).to.have.been.calledOnceWithExactly();
             expect(rememberPasswordStub).to.have.not.been.called;
