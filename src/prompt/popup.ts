@@ -1,18 +1,33 @@
 import { spawn } from 'node:child_process';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { VaultPasswordPromptConfig } from '../config/security';
 import { BaseVaultCredential, userPasswordPrompt } from '../config/vault-password-prompt';
 import { SecretValue } from '../secret-value';
 
-// TODO: The childprocess sends the password in base64 to here. See if it can be encrypted with a
-//       OTP instead. The main thing to figure out is the Powershell-side encryption and how to
-//       share the key.
-
 // TODO: The current approach is Windows only. See if we can support MacOS and Linux too.
 //       Low priority
 // MacOS: Might be able to do this with Automator
 
+/**
+ * Open up a popup window to prompt the user for credentials.
+ *
+ * There are two parts to this prompt method:
+ * 1. The JS part
+ * 2. The Powershell part, to render the popup itself
+ *
+ * For this to work, the Powershell part has to send the password back to the JS part. This is an
+ * inherently insecure approach. To make it less aweful there is some encryption involved:
+ *
+ * - An encryption key is generated in the JS part and passed to Powershell in plaintext.
+ * - The Powershell part encrypts the password given by the user with the key.
+ * - The encrypted password is returned to the JS part where it is decrypted with the key.
+ *
+ * This is still not secure since the encryption key is send in plaintext. But it is better than
+ * passing the password around in plaintext. An attacker with access to your machine will be able
+ * to snatch and decrypt the password.
+ */
 export const promptPopup: userPasswordPrompt = async function (
     keepassVaultPath: string,
     keyfilePath: string | undefined,
@@ -28,7 +43,10 @@ export const promptPopup: userPasswordPrompt = async function (
         throw new Error(`The password prompt method 'popup' is only supported on Windows`);
     }
 
+    const encryptionKey = crypto.randomBytes(32);
+
     const output = await promptUser(
+        encryptionKey.toString('base64'),
         keepassVaultPath,
         keyfilePath,
         promptConfig.allowPasswordSave,
@@ -44,17 +62,22 @@ export const promptPopup: userPasswordPrompt = async function (
     ) {
         throw new Error('Child process output has unexpected format. This should never happen');
     }
+    if (output.vault !== keepassVaultPath || output.keyfile !== keyfilePath) {
+        throw new Error('Child process changed vault or keyfile path. This should never happen');
+    }
 
+    const decryptedPassword = await decryptString(
+        Buffer.from(output.password, 'base64'),
+        encryptionKey
+    );
     return {
-        password: new SecretValue<string>(
-            'string',
-            Buffer.from(output.password, 'base64').toString('utf-8')
-        ),
+        password: decryptedPassword,
         savePassword: output.save,
     };
 };
 
 async function promptUser(
+    encryptionKey: string,
     keepassVaultPath: string,
     keyfilePath: string | undefined,
     allowPasswordSave: boolean,
@@ -64,6 +87,7 @@ async function promptUser(
         const dir = path.dirname(fileURLToPath(import.meta.url));
         const args = [
             path.join(dir, 'popup-prompt.ps1'),
+            `'${encryptionKey}'`,
             `'${keepassVaultPath}'`,
             `'${keyfilePath}'`,
             `${allowPasswordSave}`,
@@ -94,7 +118,7 @@ async function promptUser(
             }
 
             if (stderr) {
-                console.log(stdout);
+                console.log(stderr);
                 return reject(new Error('Child process unexpectedly output to stderr'));
             }
             if (stdout) {
@@ -112,5 +136,32 @@ async function promptUser(
 
             resolve(output);
         });
+    });
+}
+
+function decryptString(encryptedBuffer: Buffer, keyBuffer: Buffer): Promise<SecretValue<string>> {
+    const ivBuffer = encryptedBuffer.subarray(0, 16);
+    const dataBuffer = encryptedBuffer.subarray(16);
+
+    const decipher = crypto.createDecipheriv('aes-256-cbc', keyBuffer, ivBuffer);
+    decipher.setAutoPadding(false);
+
+    return new Promise((resolve, reject) => {
+        let decrypted = '';
+
+        decipher.on('readable', () => {
+            let chunk;
+            while (null !== (chunk = decipher.read())) {
+                decrypted += chunk.toString('utf-8').replaceAll('\x00', '');
+            }
+        });
+        decipher.on('error', (err) => {
+            reject(err);
+        });
+
+        decipher.write(dataBuffer);
+        decipher.end();
+
+        resolve(new SecretValue<string>('string', decrypted));
     });
 }

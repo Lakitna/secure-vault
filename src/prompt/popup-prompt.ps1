@@ -1,14 +1,16 @@
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
-$vaultPath = $Args[0];
-$keyfilePath = $Args[1]
-$allowSave = $Args[2] -eq 'true';
-$saveDefault = $Args[3] -eq 'true';
+$encryptionKey = $Args[0];
+$vaultPath = $Args[1];
+$keyfilePath = $Args[2];
+$allowSave = $Args[3] -eq 'true';
+$saveDefault = $Args[4] -eq 'true';
 if (-not $allowSave) {
     $saveDefault = $false;
 }
 
+# --------------------------
 
 $form = New-Object System.Windows.Forms.Form
 $form.Size = New-Object System.Drawing.Size(320,240)
@@ -87,19 +89,19 @@ $cancelButton.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
 $form.CancelButton = $cancelButton
 $form.Controls.Add($cancelButton)
 
-
 $passwordBox.Select();
 $form.Topmost = $true
 $result = $form.ShowDialog()
 
+# --------------------------
 
 if ($result -eq [System.Windows.Forms.DialogResult]::OK) {
-    $password = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($passwordBox.Text))
+    $encryptedPassword = Encrypt-String $encryptionKey $passwordBox.Text
 
     $json = @{
         vault=$vaultLocationBox.Text;
         keyfile=$keyfilePathBox.Text;
-        password=$password;
+        password=$encryptedPassword;
         save=$checkBox.Checked
     } | ConvertTo-Json -Compress
     Write-Output $json
@@ -109,4 +111,39 @@ else {
         cancel=$true;
     } | ConvertTo-Json -Compress
     Write-Output $json
+}
+
+function Create-AesManagedObject($key, $IV) {
+    $aesManaged = New-Object "System.Security.Cryptography.AesManaged"
+    $aesManaged.Mode = [System.Security.Cryptography.CipherMode]::CBC
+    $aesManaged.Padding = [System.Security.Cryptography.PaddingMode]::Zeros
+    $aesManaged.BlockSize = 128
+    $aesManaged.KeySize = 256
+    if ($IV) {
+        if ($IV.getType().Name -eq "String") {
+            $aesManaged.IV = [System.Convert]::FromBase64String($IV)
+        }
+        else {
+            $aesManaged.IV = $IV
+        }
+    }
+    if ($key) {
+        if ($key.getType().Name -eq "String") {
+            $aesManaged.Key = [System.Convert]::FromBase64String($key)
+        }
+        else {
+            $aesManaged.Key = $key
+        }
+    }
+    $aesManaged
+}
+
+function Encrypt-String($key, $unencryptedString) {
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($unencryptedString)
+    $aesManaged = Create-AesManagedObject $key
+    $encryptor = $aesManaged.CreateEncryptor()
+    $encryptedData = $encryptor.TransformFinalBlock($bytes, 0, $bytes.Length);
+    [byte[]] $fullData = $aesManaged.IV + $encryptedData
+    $aesManaged.Dispose()
+    [System.Convert]::ToBase64String($fullData)
 }
