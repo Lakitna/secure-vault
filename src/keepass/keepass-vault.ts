@@ -4,11 +4,13 @@ import { readFile, writeFile } from 'fs/promises';
 import kdbxweb, { Kdbx } from 'kdbxweb';
 import { RulebookConfig } from 'rulebound';
 import { SecurityConfig, securityConfigPresetNames } from '../config/security';
-import { Credential, CredentialData, CredentialWithoutSecrets } from '../credentials';
+import { Credential, CredentialWithoutSecrets } from '../credentials';
+import { CredentialRuleError } from '../error/credential-error';
+import { ReadonlyError } from '../error/readonly-error';
 import { SecretValue } from '../secret-value';
 import { checkCredentialSecurity, checkVaultSecurity } from '../security-checker';
 import { resolveSymlink } from '../util/resolve-symlink';
-import { GetCredentialOptions, Vault } from '../vault';
+import { GetCredentialOptions, UpdateCredentialInput, Vault } from '../vault';
 import { createCredentialWithoutSecrets, createKeepassCredential } from './keepass-credential';
 
 /**
@@ -175,27 +177,66 @@ export class KeepassVault extends Vault {
         if (!entry) return null;
 
         const cred = createKeepassCredential(entry);
-        if (options && options.secure === false) {
+        if (options === undefined || options.secure === true) {
             await checkCredentialSecurity(this.securityConfig, cred, this);
         }
         return cred;
     }
 
-    public async createCredential(): Promise<Credential> {
-        // TODO: Implement
-        throw new Error('Not implemented');
+    public async createCredential(
+        group: string,
+        entryTitle: string,
+        input: UpdateCredentialInput
+    ): Promise<Credential> {
+        if (this.readonly) {
+            throw new ReadonlyError('create credential');
+        }
+
+        const vault = await this.open();
+        const rootGroup = vault.getDefaultGroup();
+        const vaultGroups = rootGroup.groups;
+
+        let vaultGroup = vaultGroups.find((vaultGroup) => vaultGroup.name === group);
+        if (vaultGroup === undefined) {
+            vaultGroup = vault.createGroup(rootGroup, group);
+        }
+
+        const existingVaultEntry = vaultGroup.entries.find((vaultEntry) => {
+            return vaultEntry.fields.get('Title')?.toString() === entryTitle;
+        });
+        if (existingVaultEntry !== undefined) {
+            throw new Error(`Can't create credential. It already exists.`);
+        }
+        const vaultEntry = vault.createEntry(vaultGroup);
+
+        if (!input.data) {
+            input.data = {};
+        }
+        input['data']['title'] = entryTitle;
+        await this.updateEntry(vaultEntry, input);
+
+        try {
+            const credential = await this.getCredentialById(vaultEntry.uuid.id, {
+                secure: true,
+            });
+            if (credential === null) {
+                throw new Error('Could not find created credential. This should never happen');
+            }
+            return credential;
+        } catch (error: unknown) {
+            if (error instanceof CredentialRuleError) {
+                throw new Error('Could not create credential', { cause: error });
+            }
+            throw error;
+        }
     }
 
     public async updateCredential(
         credential: Credential,
-        input: Partial<{
-            data: Partial<CredentialData>;
-            attachments: Record<string, SecretValue<Uint8Array> | null>;
-            expiration: Date | null;
-        }>
+        input: UpdateCredentialInput
     ): Promise<void> {
         if (this.readonly) {
-            throw new Error(`Vault was opened in readonly mode. Can't update credential.`);
+            throw new ReadonlyError('update credential');
         }
 
         const vault = await this.open();
@@ -204,6 +245,51 @@ export class KeepassVault extends Vault {
             throw new Error(`Couldn't find credential by it's id: '${credential.path.join('/')}'`);
         }
 
+        return this.updateEntry(entry, input);
+    }
+
+    public async deleteCredential(credential: Credential): Promise<void> {
+        if (this.readonly) {
+            throw new ReadonlyError('delete credential');
+        }
+
+        const vault = await this.open();
+        const entry = await this.getEntryById(vault, credential.id);
+        if (!entry) {
+            throw new Error(`Couldn't find credential by it's id: '${credential.path.join('/')}'`);
+        }
+
+        vault.remove(entry);
+    }
+
+    public async save() {
+        if (this.readonly) {
+            throw new ReadonlyError('save vault');
+        }
+
+        const vault = await this.open();
+
+        const fileContent = await vault.save();
+        const vaultPath = await resolveSymlink(this.path);
+
+        await writeFile(vaultPath, Buffer.from(fileContent));
+    }
+
+    private async getEntryById(
+        vault: kdbxweb.Kdbx,
+        uuid: string
+    ): Promise<kdbxweb.KdbxEntry | null> {
+        const defaultGroup = vault.getDefaultGroup();
+        const entry = [...defaultGroup.allEntries()].find((entry) => {
+            return entry.uuid.valueOf() === uuid;
+        });
+        if (!entry) {
+            return null;
+        }
+        return entry;
+    }
+
+    private async updateEntry(entry: kdbxweb.KdbxEntry, input: UpdateCredentialInput) {
         if (!input.data && !input.attachments && input.expiration === undefined) {
             return;
         }
@@ -252,42 +338,5 @@ export class KeepassVault extends Vault {
         }
 
         entry.times.update();
-    }
-
-    public async deleteCredential(credential: Credential): Promise<void> {
-        if (this.readonly) {
-            throw new Error(`Vault was opened in readonly mode. Can't delete credential.`);
-        }
-
-        const vault = await this.open();
-        const entry = await this.getEntryById(vault, credential.id);
-        if (!entry) {
-            throw new Error(`Couldn't find credential by it's id: '${credential.path.join('/')}'`);
-        }
-
-        vault.remove(entry);
-    }
-
-    public async save() {
-        const vault = await this.open();
-
-        const fileContent = await vault.save();
-        const vaultPath = await resolveSymlink(this.path);
-
-        await writeFile(vaultPath, Buffer.from(fileContent));
-    }
-
-    private async getEntryById(
-        vault: kdbxweb.Kdbx,
-        uuid: string
-    ): Promise<kdbxweb.KdbxEntry | null> {
-        const defaultGroup = vault.getDefaultGroup();
-        const entry = [...defaultGroup.allEntries()].find((entry) => {
-            return entry.uuid.valueOf() === uuid;
-        });
-        if (!entry) {
-            return null;
-        }
-        return entry;
     }
 }

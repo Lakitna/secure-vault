@@ -42,6 +42,12 @@ export type GetCredentialOptions = {
     secure: boolean;
 };
 
+export type UpdateCredentialInput = Partial<{
+    data: Partial<CredentialData>;
+    attachments: Record<string, SecretValue<Uint8Array> | null>;
+    expiration: Date | null;
+}>;
+
 export abstract class Vault {
     public readonly: VaultOptions['readonly'];
     public securityConfig: ResolvedSecurityConfig;
@@ -90,22 +96,18 @@ export abstract class Vault {
     /**
      * Store a new credential in the vault.
      */
-    public abstract createCredential(input: {
-        data?: Partial<CredentialData>;
-        attachments?: Record<string, SecretValue<Uint8Array>>;
-        expiration?: Date;
-    }): Promise<Credential>;
+    public abstract createCredential(
+        folder: string,
+        entryTitle: string,
+        input: UpdateCredentialInput
+    ): Promise<Credential>;
 
     /**
      * Update an existing credential.
      */
     public abstract updateCredential(
         credential: Credential,
-        input: Partial<{
-            data: Partial<CredentialData>;
-            attachments: Record<string, SecretValue<Uint8Array> | null>;
-            expiration: Date | null;
-        }>
+        input: UpdateCredentialInput
     ): Promise<void>;
 
     /**
