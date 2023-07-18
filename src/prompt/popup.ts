@@ -73,6 +73,8 @@ export const promptPopup: userPasswordPrompt = async function (
     return {
         password: decryptedPassword,
         savePassword: output.save,
+        vaultPath: keepassVaultPath,
+        multifactor: keyfilePath,
     };
 };
 

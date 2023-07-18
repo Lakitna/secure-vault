@@ -4,8 +4,8 @@ import { readFile, writeFile } from 'fs/promises';
 import kdbxweb, { Kdbx } from 'kdbxweb';
 import { RulebookConfig } from 'rulebound';
 import { SecurityConfig, securityConfigPresetNames } from '../config/security';
+import { BaseVaultCredential } from '../config/vault-password-prompt';
 import { Credential, CredentialWithoutSecrets } from '../credentials';
-import { CredentialRuleError } from '../error/credential-error';
 import { ReadonlyError } from '../error/readonly-error';
 import { SecretValue } from '../secret-value';
 import { checkCredentialSecurity, checkVaultSecurity } from '../security-checker';
@@ -73,7 +73,6 @@ export class KeepassVault extends Vault {
             return this.vault;
         }
 
-        const vaultPath = await resolveSymlink(this.path);
         const prompt = () =>
             this.securityConfig.prompt.method(
                 this.path,
@@ -81,50 +80,18 @@ export class KeepassVault extends Vault {
                 this.securityConfig.prompt
             );
         const vaultCredential = await this.getVaultCredential(
-            vaultPath,
+            {
+                vaultPath: this.path,
+                multifactor: this.keyfilePath,
+            },
             this.openTries === 0,
             prompt
         );
 
-        const vaultFile = await readFile(vaultPath).catch((err) => {
-            console.error(err instanceof Error ? err.stack : err);
-            throw new Error('Could not open vault file');
-        });
+        const keyfile = await this.openKeyfile(vaultCredential.multifactor);
+        const vault = await this.openVault(vaultCredential, keyfile);
 
-        let keyfilePath: string | undefined;
-        if (this.keyfilePath) {
-            keyfilePath = await resolveSymlink(this.keyfilePath);
-        }
-        let keyfile: ArrayBufferLike | undefined;
-        if (keyfilePath) {
-            keyfile = await readFile(keyfilePath)
-                .then((file) => file.buffer)
-                .catch((err) => {
-                    console.error(err instanceof Error ? err.stack : err);
-                    throw new Error('Could not open keyfile');
-                });
-        }
-
-        const kdbxCredentials = new kdbxweb.Credentials(vaultCredential.password.value, keyfile);
-
-        let vault;
-        try {
-            vault = await kdbxweb.Kdbx.load(vaultFile.buffer, kdbxCredentials);
-        } catch (err) {
-            if (this.openTries === 0 && this.securityConfig.prompt.allowPasswordSave) {
-                console.log('Could not open vault. Retrying...');
-                this.openTries++;
-                return this.open();
-            }
-
-            console.error(err instanceof Error ? err.stack : err);
-            throw new Error('Could not open the vault. This is probably a credentials issue');
-        }
-
-        await checkVaultSecurity(this.logLevel, this.securityConfig, vault, vaultCredential, {
-            vault: vaultPath,
-            keyfile: keyfilePath,
-        });
+        await checkVaultSecurity(this.logLevel, this.securityConfig, vault, vaultCredential);
 
         this.vault = vault;
         this.openTries = 0;
@@ -213,6 +180,7 @@ export class KeepassVault extends Vault {
             input.data = {};
         }
         input['data']['title'] = entryTitle;
+
         await this.updateEntry(vaultEntry, input);
 
         try {
@@ -224,10 +192,7 @@ export class KeepassVault extends Vault {
             }
             return credential;
         } catch (error: unknown) {
-            if (error instanceof CredentialRuleError) {
-                throw new Error('Could not create credential', { cause: error });
-            }
-            throw error;
+            throw new Error('Could not create credential', { cause: error });
         }
     }
 
@@ -273,6 +238,50 @@ export class KeepassVault extends Vault {
         const vaultPath = await resolveSymlink(this.path);
 
         await writeFile(vaultPath, Buffer.from(fileContent));
+    }
+
+    private async openKeyfile(
+        keyFilePath: string | undefined
+    ): Promise<ArrayBufferLike | undefined> {
+        if (!keyFilePath) {
+            return;
+        }
+
+        keyFilePath = await resolveSymlink(keyFilePath);
+
+        try {
+            const file = await readFile(keyFilePath);
+            return file.buffer;
+        } catch (error: unknown) {
+            throw new Error('Could not open keyfile', { cause: error });
+        }
+    }
+
+    private async openVault(
+        vaultCredential: BaseVaultCredential,
+        keyfile: ArrayBuffer | undefined
+    ) {
+        const kdbxCredentials = new kdbxweb.Credentials(vaultCredential.password.value, keyfile);
+
+        const vaultFilePath = await resolveSymlink(vaultCredential.vaultPath);
+        const vaultFile = await readFile(vaultFilePath).catch((err) => {
+            throw new Error('Could not open vault file', { cause: err });
+        });
+
+        try {
+            const vault = await kdbxweb.Kdbx.load(vaultFile.buffer, kdbxCredentials);
+            return vault;
+        } catch (err) {
+            if (this.openTries === 0 && this.securityConfig.prompt.allowPasswordSave) {
+                console.log('Could not open vault. Retrying...');
+                this.openTries++;
+                return this.open();
+            }
+
+            throw new Error('Could not open the vault. This is probably a credentials issue', {
+                cause: err,
+            });
+        }
     }
 
     private async getEntryById(

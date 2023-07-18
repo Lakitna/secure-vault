@@ -15,6 +15,8 @@ export type userPasswordPrompt = (
 export interface BaseVaultCredential {
     password: SecretValue<string>;
     savePassword: boolean;
+    vaultPath: string;
+    multifactor: string | undefined;
 }
 
 export const vaultPasswordPromptPresets = {

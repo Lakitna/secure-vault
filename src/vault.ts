@@ -31,6 +31,11 @@ export interface VaultOptions {
     logLevel: RulebookConfig['verboseness'];
 }
 
+export interface VaultConnectionDetails {
+    vaultPath: string;
+    multifactor?: string;
+}
+
 export type GetCredentialOptions = {
     /**
      * Don't execute security checks.
@@ -119,7 +124,7 @@ export abstract class Vault {
      * Get the secrets to open the vault using the prompt method.
      */
     public async getVaultCredential(
-        vaultId: string,
+        vaultConnectionDetails: VaultConnectionDetails,
         firstAttempt: boolean,
         boundUserPrompt: () => Promise<BaseVaultCredential>
     ): Promise<BaseVaultCredential> {
@@ -127,24 +132,28 @@ export abstract class Vault {
         // infinite loop of bad vault passwords.
         if (firstAttempt) {
             if (this.securityConfig.prompt.allowPasswordSave) {
-                const rememberedPass = await getRememberedPassword(vaultId);
+                const rememberedPass = await getRememberedPassword(
+                    vaultConnectionDetails.vaultPath
+                );
                 if (rememberedPass instanceof SecretValue) {
                     console.log('Using remembered vault password');
                     return {
                         password: rememberedPass,
                         savePassword: false,
+                        vaultPath: vaultConnectionDetails.vaultPath,
+                        multifactor: vaultConnectionDetails.multifactor,
                     };
                 }
             } else {
                 // Clear a potentially stored password to reduce the chance of it lingering after
                 // config change.
-                await forgetRememberedPassword(vaultId);
+                await forgetRememberedPassword(vaultConnectionDetails.vaultPath);
             }
         }
 
         const vaultCredential = await boundUserPrompt();
         if (vaultCredential.savePassword) {
-            await rememberPassword(vaultId, vaultCredential.password);
+            await rememberPassword(vaultConnectionDetails.vaultPath, vaultCredential.password);
             console.log('✅ Remembered vault password');
         }
 

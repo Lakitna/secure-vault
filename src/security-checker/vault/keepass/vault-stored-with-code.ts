@@ -31,8 +31,8 @@ export function keepassVaultStoredWithCode() {
 
             return true;
         })
-        .define(async ({ vaultPaths }) => {
-            const vaultPath = await resolveSymlink(vaultPaths.vault);
+        .define(async ({ vaultCredential }) => {
+            const vaultPath = await resolveSymlink(vaultCredential.vaultPath);
             const vaultWithCode = await file.fileWithCode(vaultPath);
             return !vaultWithCode;
         })

@@ -63,6 +63,8 @@ export const promptCli: userPasswordPrompt = async function (
     return {
         password: new SecretValue<string>('string', response.password as string),
         savePassword: (response.savePassword as boolean | undefined) ?? false,
+        vaultPath: keepassVaultPath,
+        multifactor: keyfilePath,
     };
 };
 

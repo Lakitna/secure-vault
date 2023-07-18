@@ -76,7 +76,6 @@ export interface vaultRuleParameters {
     config: ResolvedSecurityConfig;
     vault: Kdbx;
     vaultCredential: BaseVaultCredential;
-    vaultPaths: { vault: string; keyfile: string | undefined };
 }
 
 let vaultRuleset: Rulebook<vaultRuleParameters>;
@@ -106,15 +105,14 @@ export async function checkVaultSecurity(
     logLevel: RulebookConfig['verboseness'],
     config: ResolvedSecurityConfig,
     vault: Kdbx,
-    vaultCredential: BaseVaultCredential,
-    vaultPaths: { vault: string; keyfile: string | undefined }
+    vaultCredential: BaseVaultCredential
 ): Promise<void> {
     const rulebook = await getVaultRuleset({
         verboseness: logLevel,
     });
 
     try {
-        await rulebook.enforce('**/*', { config, vault, vaultCredential, vaultPaths });
+        await rulebook.enforce('**/*', { config, vault, vaultCredential });
     } catch (error) {
         if (error instanceof RuleError) {
             throw new VaultRuleError(vault, error);

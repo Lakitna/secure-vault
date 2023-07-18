@@ -8,16 +8,19 @@ export const promptEnvironmentVariable: userPasswordPrompt = async function (
 ): Promise<BaseVaultCredential> {
     let vault = process.env.KEEPASS_VAULT_PATH;
     if (!vault) {
-        console.log('Missing environment variable KEEPASS_VAULT_PATH, using config value:');
         vault = keepassVaultPath;
-        console.log('  ' + vault);
+        console.log(
+            `Missing environment variable KEEPASS_VAULT_PATH, using config value: ${vault}`
+        );
     }
 
     let keyfile = process.env.KEEPASS_VAULT_KEYFILE_PATH;
     if (!keyfile) {
-        console.log('Missing environment variable KEEPASS_VAULT_KEYFILE_PATH, using config value:');
         keyfile = keyfilePath;
-        console.log('  ' + keyfile);
+        console.log(
+            `Missing environment variable KEEPASS_VAULT_KEYFILE_PATH, ` +
+                `using config value: ${keyfile}`
+        );
     }
 
     const password = process.env.KEEPASS_VAULT_PASSWORD;
@@ -28,5 +31,7 @@ export const promptEnvironmentVariable: userPasswordPrompt = async function (
     return {
         password: new SecretValue<string>('string', kdbx.ProtectedValue.fromString(password)),
         savePassword: false,
+        vaultPath: vault,
+        multifactor: keyfile,
     };
 };
