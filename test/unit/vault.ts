@@ -34,6 +34,8 @@ describe('Abstract vault', () => {
         const userPromptStubReturn: BaseVaultCredential = {
             password: new SecretValue('string', 'some-password'),
             savePassword: false,
+            vaultPath: 'vault-id',
+            multifactor: undefined,
         };
 
         it('prompts the user if password save is not allowed', async () => {
@@ -61,7 +63,11 @@ describe('Abstract vault', () => {
                     },
                 },
             } as Partial<VaultOptions>);
-            const result = await vault.getVaultCredential('vault-id', true, userPromptStub);
+            const result = await vault.getVaultCredential(
+                { vaultPath: 'vault-id', multifactor: undefined },
+                true,
+                userPromptStub
+            );
 
             expect(forgetRememberedPasswordStub).to.have.been.calledOnce;
             expect(getRememberedPasswordStub).to.have.not.been.called;
@@ -124,7 +130,11 @@ describe('Abstract vault', () => {
                     },
                 },
             } as Partial<VaultOptions>);
-            const result = await vault.getVaultCredential('vault-id', true, userPromptStub);
+            const result = await vault.getVaultCredential(
+                { vaultPath: 'vault-id', multifactor: undefined },
+                true,
+                userPromptStub
+            );
 
             expect(getRememberedPasswordStub).to.have.been.calledOnceWithExactly('vault-id');
             expect(userPromptStub).to.have.been.calledOnceWithExactly();
@@ -158,7 +168,11 @@ describe('Abstract vault', () => {
                     },
                 },
             } as Partial<VaultOptions>);
-            const result = await vault.getVaultCredential('vault-id', true, userPromptStub);
+            const result = await vault.getVaultCredential(
+                { vaultPath: 'vault-id', multifactor: undefined },
+                true,
+                userPromptStub
+            );
 
             expect(getRememberedPasswordStub).to.have.been.calledOnceWithExactly('vault-id');
             expect(userPromptStub).to.have.not.been.called;
@@ -199,7 +213,11 @@ describe('Abstract vault', () => {
                     },
                 },
             } as Partial<VaultOptions>);
-            const result = await vault.getVaultCredential('vault-id', false, userPromptStub);
+            const result = await vault.getVaultCredential(
+                { vaultPath: 'vault-id', multifactor: undefined },
+                false,
+                userPromptStub
+            );
 
             expect(getRememberedPasswordStub).to.have.not.been.called;
             expect(userPromptStub).to.have.been.calledOnceWithExactly();

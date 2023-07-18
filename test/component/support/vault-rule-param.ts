@@ -8,10 +8,8 @@ export async function vaultRuleParams(vault: KeepassVault): Promise<vaultRulePar
         vaultCredential: {
             password: new SecretValue<string>('string', ''),
             savePassword: false,
-        },
-        vaultPaths: {
-            vault: vault.path,
-            keyfile: vault.keyfilePath,
+            vaultPath: vault.path,
+            multifactor: vault.keyfilePath,
         },
     };
 }
