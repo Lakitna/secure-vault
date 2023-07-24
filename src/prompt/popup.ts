@@ -17,16 +17,8 @@ import { SecretValue } from '../secret-value';
  * 1. The JS part
  * 2. The Powershell part, to render the popup itself
  *
- * For this to work, the Powershell part has to send the password back to the JS part. This is an
- * inherently insecure approach. To make it less aweful there is some encryption involved:
- *
- * - An encryption key is generated in the JS part and passed to Powershell in plaintext.
- * - The Powershell part encrypts the password given by the user with the key.
- * - The encrypted password is returned to the JS part where it is decrypted with the key.
- *
- * This is still not secure since the encryption key is send in plaintext. But it is better than
- * passing the password around in plaintext. An attacker with access to your machine will be able
- * to snatch and decrypt the password.
+ * For this to work, the Powershell part has to send the password back to the JS part. During
+ * transit, the password is encrypted with RSA.
  */
 export const promptPopup: userPasswordPrompt = async function (
     keepassVaultPath: string,
@@ -43,10 +35,12 @@ export const promptPopup: userPasswordPrompt = async function (
         throw new Error(`The password prompt method 'popup' is only supported on Windows`);
     }
 
-    const encryptionKey = crypto.randomBytes(32);
+    const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
+        modulusLength: 2048,
+    });
 
     const output = await promptUser(
-        encryptionKey.toString('base64'),
+        publicKeyToXml(publicKey),
         keepassVaultPath,
         keyfilePath,
         promptConfig.allowPasswordSave,
@@ -66,10 +60,7 @@ export const promptPopup: userPasswordPrompt = async function (
         throw new Error('Child process changed vault or keyfile path. This should never happen');
     }
 
-    const decryptedPassword = await decryptString(
-        Buffer.from(output.password, 'base64'),
-        encryptionKey
-    );
+    const decryptedPassword = decryptString(Buffer.from(output.password, 'base64'), privateKey);
     return {
         password: decryptedPassword,
         savePassword: output.save,
@@ -141,29 +132,33 @@ async function promptUser(
     });
 }
 
-function decryptString(encryptedBuffer: Buffer, keyBuffer: Buffer): Promise<SecretValue<string>> {
-    const ivBuffer = encryptedBuffer.subarray(0, 16);
-    const dataBuffer = encryptedBuffer.subarray(16);
+/**
+ * Powershell 5 only supports importing public keys in xml format.
+ * Let's be accommodating and convert.
+ *
+ * Made possible by: https://stackoverflow.com/a/76744273/2963820
+ */
+function publicKeyToXml(publicKey: crypto.KeyObject): string {
+    const jwk = publicKey.export({ format: 'jwk' });
 
-    const decipher = crypto.createDecipheriv('aes-256-cbc', keyBuffer, ivBuffer);
-    decipher.setAutoPadding(false);
+    if (!jwk.n || !jwk.e) {
+        throw new Error('Incomplete public key. How did you get here?');
+    }
 
-    return new Promise((resolve, reject) => {
-        let decrypted = '';
+    const n = Buffer.from(jwk.n, 'base64url').toString('base64');
+    const e = Buffer.from(jwk.e, 'base64url').toString('base64');
 
-        decipher.on('readable', () => {
-            let chunk;
-            while (null !== (chunk = decipher.read())) {
-                decrypted += chunk.toString('utf-8').replaceAll('\x00', '');
-            }
-        });
-        decipher.on('error', (err) => {
-            reject(err);
-        });
+    return `<RSAKeyValue><Modulus>${n}</Modulus><Exponent>${e}</Exponent></RSAKeyValue>`;
+}
 
-        decipher.write(dataBuffer);
-        decipher.end();
+function decryptString(encryptedBuffer: Buffer, privateKey: crypto.KeyObject): SecretValue<string> {
+    const decryptedBuffer = crypto.privateDecrypt(
+        {
+            key: privateKey,
+            padding: crypto.constants.RSA_PKCS1_PADDING,
+        },
+        encryptedBuffer
+    );
 
-        resolve(new SecretValue<string>('string', decrypted));
-    });
+    return new SecretValue<string>('string', decryptedBuffer.toString('utf-8'));
 }

@@ -1,7 +1,7 @@
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
-$encryptionKey = $Args[0];
+$publicKeyXml = $Args[0];
 $vaultPath = $Args[1];
 $keyfilePath = $Args[2];
 $allowSave = $Args[3] -eq 'true';
@@ -95,8 +95,23 @@ $result = $form.ShowDialog()
 
 # --------------------------
 
+# Made possible by: https://stackoverflow.com/a/76744273/2963820
+function Encrypt-String($unencryptedString, $publicKeyXml) {
+    $rsa = New-Object System.Security.Cryptography.RSACryptoServiceProvider
+    $rsa.FromXmlString($publicKeyXml)
+
+    [byte[]] $unencryptedBytes = [Text.Encoding]::UTF8.GetBytes($unencryptedString)
+    $ciphertext = $rsa.Encrypt(
+        $unencryptedBytes,
+        [System.Security.Cryptography.RSAEncryptionPadding]::Pkcs1
+    )
+
+    $ciphertextB64 = [System.Convert]::ToBase64String($ciphertext)
+    Write-Output $ciphertextB64
+}
+
 if ($result -eq [System.Windows.Forms.DialogResult]::OK) {
-    $encryptedPassword = Encrypt-String $encryptionKey $passwordBox.Text
+    $encryptedPassword = Encrypt-String $passwordBox.Text $publicKeyXml
 
     $json = @{
         vault=$vaultLocationBox.Text;
@@ -111,39 +126,4 @@ else {
         cancel=$true;
     } | ConvertTo-Json -Compress
     Write-Output $json
-}
-
-function Create-AesManagedObject($key, $IV) {
-    $aesManaged = New-Object "System.Security.Cryptography.AesManaged"
-    $aesManaged.Mode = [System.Security.Cryptography.CipherMode]::CBC
-    $aesManaged.Padding = [System.Security.Cryptography.PaddingMode]::Zeros
-    $aesManaged.BlockSize = 128
-    $aesManaged.KeySize = 256
-    if ($IV) {
-        if ($IV.getType().Name -eq "String") {
-            $aesManaged.IV = [System.Convert]::FromBase64String($IV)
-        }
-        else {
-            $aesManaged.IV = $IV
-        }
-    }
-    if ($key) {
-        if ($key.getType().Name -eq "String") {
-            $aesManaged.Key = [System.Convert]::FromBase64String($key)
-        }
-        else {
-            $aesManaged.Key = $key
-        }
-    }
-    $aesManaged
-}
-
-function Encrypt-String($key, $unencryptedString) {
-    $bytes = [System.Text.Encoding]::UTF8.GetBytes($unencryptedString)
-    $aesManaged = Create-AesManagedObject $key
-    $encryptor = $aesManaged.CreateEncryptor()
-    $encryptedData = $encryptor.TransformFinalBlock($bytes, 0, $bytes.Length);
-    [byte[]] $fullData = $aesManaged.IV + $encryptedData
-    $aesManaged.Dispose()
-    [System.Convert]::ToBase64String($fullData)
 }
