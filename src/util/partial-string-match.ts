@@ -1,4 +1,4 @@
-import Fuse from 'fuse.js';
+import Fuse, { FuseResult } from 'fuse.js';
 import memoize from 'micro-memoize';
 import { SecretValue } from '../secret-value';
 
@@ -11,7 +11,7 @@ export function detectPartialStringMatch(
     a: string | SecretValue<string>,
     b: string | SecretValue<string>,
     strictness: 'strict' | 'normal' | 'loose' = 'normal'
-): false | Fuse.FuseResult<string> {
+): false | FuseResult<string> {
     const minSubstringLength = 5;
     const minSubstringLengthStep = 2;
 

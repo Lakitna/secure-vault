@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import Fuse from 'fuse.js';
+import { FuseResult } from 'fuse.js';
 import { SecretValue } from '../../../src/secret-value';
 import { detectPartialStringMatch } from '../../../src/util/partial-string-match';
 
@@ -11,7 +11,7 @@ describe('Partial string matcher util', () => {
         const result = detectPartialStringMatch(a, b);
 
         expect(result).to.not.be.false;
-        expect((result as Fuse.FuseResult<string>).score).to.equal(0);
+        expect((result as FuseResult<string>).score).to.equal(0);
     });
 
     it('matches exact strings', async () => {
@@ -21,7 +21,7 @@ describe('Partial string matcher util', () => {
         const result = detectPartialStringMatch(a, b);
 
         expect(result).to.not.be.false;
-        expect((result as Fuse.FuseResult<string>).score).to.equal(0);
+        expect((result as FuseResult<string>).score).to.equal(0);
     });
 
     it('matches similar strings', async () => {
@@ -31,7 +31,7 @@ describe('Partial string matcher util', () => {
         const result = detectPartialStringMatch(a, b);
 
         expect(result).to.not.be.false;
-        expect((result as Fuse.FuseResult<string>).score).to.be.at.least(0);
+        expect((result as FuseResult<string>).score).to.be.at.least(0);
     });
 
     it('does not match unrelated strings', async () => {
@@ -50,7 +50,7 @@ describe('Partial string matcher util', () => {
         const result = detectPartialStringMatch(a, b);
 
         expect(result).to.not.be.false;
-        expect((result as Fuse.FuseResult<string>).score).to.equal(0);
+        expect((result as FuseResult<string>).score).to.equal(0);
     });
 
     it('matches a close substring', async () => {
@@ -60,7 +60,7 @@ describe('Partial string matcher util', () => {
         const result = detectPartialStringMatch(a, b);
 
         expect(result).to.not.be.false;
-        expect((result as Fuse.FuseResult<string>).score).to.be.at.least(0);
+        expect((result as FuseResult<string>).score).to.be.at.least(0);
     });
 
     it('matches a 2 character substring', async () => {
@@ -70,7 +70,7 @@ describe('Partial string matcher util', () => {
         const result = detectPartialStringMatch(a, b);
 
         expect(result).to.not.be.false;
-        expect((result as Fuse.FuseResult<string>).score).to.be.at.least(0);
+        expect((result as FuseResult<string>).score).to.be.at.least(0);
     });
 
     it('matches a 1 character substring', async () => {
@@ -80,7 +80,7 @@ describe('Partial string matcher util', () => {
         const result = detectPartialStringMatch(a, b);
 
         expect(result).to.not.be.false;
-        expect((result as Fuse.FuseResult<string>).score).to.be.at.least(0);
+        expect((result as FuseResult<string>).score).to.be.at.least(0);
     });
 
     it('matches same string in different case', async () => {
@@ -90,7 +90,7 @@ describe('Partial string matcher util', () => {
         const result = detectPartialStringMatch(a, b);
 
         expect(result).to.not.be.false;
-        expect((result as Fuse.FuseResult<string>).score).to.be.at.least(0);
+        expect((result as FuseResult<string>).score).to.be.at.least(0);
     });
 
     it('matches a not so close substring', async () => {
@@ -105,11 +105,11 @@ describe('Partial string matcher util', () => {
         expect(normalResult).to.not.be.false;
         expect(strictResult).to.not.be.false;
 
-        expect((looseResult as Fuse.FuseResult<string>).item).to.not.equal(
-            (normalResult as Fuse.FuseResult<string>).item
+        expect((looseResult as FuseResult<string>).item).to.not.equal(
+            (normalResult as FuseResult<string>).item
         );
-        expect((normalResult as Fuse.FuseResult<string>).item).to.not.equal(
-            (strictResult as Fuse.FuseResult<string>).item
+        expect((normalResult as FuseResult<string>).item).to.not.equal(
+            (strictResult as FuseResult<string>).item
         );
     });
 
@@ -120,6 +120,6 @@ describe('Partial string matcher util', () => {
         const result = detectPartialStringMatch(a, b);
 
         expect(result).to.not.be.false;
-        expect((result as Fuse.FuseResult<string>).score).to.be.at.least(0);
+        expect((result as FuseResult<string>).score).to.be.at.least(0);
     });
 });

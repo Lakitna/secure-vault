@@ -3,7 +3,7 @@ import { exec } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import rimraf from 'rimraf';
+import { rimraf } from 'rimraf';
 import { getRoot, isIgnored } from '../../../src/util/git';
 
 describe('Git repo utils', () => {
