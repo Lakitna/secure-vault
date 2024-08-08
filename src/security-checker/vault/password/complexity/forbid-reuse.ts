@@ -1,6 +1,5 @@
 import { Rule } from 'rulebound';
 import { vaultRuleParameters } from '../../..';
-import { createKeepassCredential } from '../../../../vault/keepass/keepass-credential';
 
 export function vaultPasswordComplexityCharacterForbidReuse() {
     return new Rule<vaultRuleParameters>('vault/password/complexity/forbid-reuse')
@@ -30,20 +29,10 @@ export function vaultPasswordComplexityCharacterForbidReuse() {
         .define(async ({ vault, vaultCredential }) => {
             const vaultPassword = vaultCredential.password;
 
-            const defaultGroup = vault.getDefaultGroup();
-            const entries = [...defaultGroup.allEntries()];
-            const credentials = entries.map((entry) => createKeepassCredential(entry));
-
-            for (const credential of credentials) {
-                const otherPassword = credential.data.password;
-
-                if (!vaultPassword.equals(otherPassword)) {
-                    // Not the same password.
-                    continue;
-                }
-
+            const passwordUseCount = await vault.getPasswordUseCount(vaultPassword);
+            if (passwordUseCount > 0) {
                 throw new Error(
-                    `Vault password is used by a credential: ` + `'${credential.path.join('/')}'`
+                    `Vault password is also used by ${passwordUseCount} credential(s) in the vault`
                 );
             }
 

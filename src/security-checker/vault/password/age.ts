@@ -36,10 +36,10 @@ export function vaultPasswordAge() {
 
             return true;
         })
-        .define(({ config, vault }) => {
+        .define(async ({ config, vault }) => {
             const maxPasswordAge = config.vaultRestrictions.maxPasswordAge;
 
-            const passwordChanged = vault.meta.keyChanged;
+            const passwordChanged = await vault.getVaultPasswordLastChangeDate();
             if (!passwordChanged) {
                 throw new Error(
                     'Could not find when the vault password was last changed. Assuming the worst.'

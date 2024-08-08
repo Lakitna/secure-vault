@@ -62,11 +62,13 @@ export type UpdateCredentialInput = Partial<{
 }>;
 
 export abstract class Vault {
+    public id: VaultOptions['id'];
     public readonly: VaultOptions['readonly'];
     public securityConfig: ResolvedSecurityConfig;
     public logLevel: VaultOptions['logLevel'];
 
     constructor(options: Partial<VaultOptions> = {}) {
+        this.id = options.id ?? '[unknown]';
         this.readonly = options.readonly ?? true;
         this.securityConfig = resolveSecurityConfig(options.securityConfig);
         this.logLevel = options.logLevel ?? 'info';
@@ -127,6 +129,16 @@ export abstract class Vault {
      * Delete a credential.
      */
     public abstract deleteCredential(credential: Credential): Promise<void>;
+
+    /**
+     * Returns when the vault password was last changed. Used to enforce vault rules.
+     */
+    public abstract getVaultPasswordLastChangeDate(): Promise<Date | null>;
+
+    /**
+     * Returns the number of times the given password is used in the vault.
+     */
+    public abstract getPasswordUseCount(password: SecretValue<string>): Promise<number>;
 
     /**
      * Get the secrets to open the vault using the prompt method.

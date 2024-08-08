@@ -1,4 +1,3 @@
-import { Kdbx } from 'kdbxweb';
 import { Rulebook, RulebookConfig, RuleError } from 'rulebound';
 import { ResolvedSecurityConfig } from '../config/security';
 import { BaseVaultCredential } from '../config/vault-password-prompt';
@@ -16,6 +15,7 @@ import { credentialPasswordComplexityForbidUrl } from './credential/password/com
 import { credentialPasswordComplexityForbidUsername } from './credential/password/complexity/forbid-username';
 import { credentialPasswordLength } from './credential/password/length';
 
+import { Vault } from '../vault/vault';
 import { keepassVaultKeyfileRequire } from './vault/keepass/keyfile/keyfile-require';
 import { keepassVaultKeyfileStoredWithCode } from './vault/keepass/keyfile/keyfile-stored-with-code';
 import { keepassVaultPasswordComplexityCharacterForbidVaultName } from './vault/keepass/password/forbid-vault-name';
@@ -36,7 +36,7 @@ export interface credentialRuleParameters {
 
 export interface vaultRuleParameters {
     config: ResolvedSecurityConfig;
-    vault: Kdbx;
+    vault: Vault;
     vaultCredential: BaseVaultCredential;
 }
 
@@ -103,7 +103,7 @@ export class SecurityChecker {
     async checkVaultSecurity(
         logLevel: RulebookConfig['verboseness'],
         config: ResolvedSecurityConfig,
-        vault: Kdbx,
+        vault: Vault,
         vaultCredential: BaseVaultCredential
     ): Promise<void> {
         this.rulesetVault.config.set({ verboseness: logLevel });

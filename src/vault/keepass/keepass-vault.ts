@@ -1,7 +1,7 @@
 import argon2 from 'argon2';
 import camelcase from 'camelcase';
 import { readFile, writeFile } from 'fs/promises';
-import kdbxweb, { Kdbx } from 'kdbxweb';
+import kdbxweb, { Kdbx, KdbxEntry } from 'kdbxweb';
 import { RulebookConfig } from 'rulebound';
 import { SecurityConfig, securityConfigPresetNames } from '../../config/security';
 import { BaseVaultCredential } from '../../config/vault-password-prompt';
@@ -117,6 +117,11 @@ export class KeepassVault extends Vault {
     }
 
     public async listCredentials(group?: string): Promise<CredentialWithoutSecrets[]> {
+        const entries = await this.getAllEntries(group);
+        return entries.map((entry) => createCredentialWithoutSecrets(entry));
+    }
+
+    private async getAllEntries(group?: string): Promise<KdbxEntry[]> {
         const vault = await this.open();
 
         const defaultGroup = vault.getDefaultGroup();
@@ -128,7 +133,7 @@ export class KeepassVault extends Vault {
             });
         }
 
-        return entries.map((entry) => createCredentialWithoutSecrets(entry));
+        return entries;
     }
 
     public async getCredential(
@@ -380,5 +385,21 @@ export class KeepassVault extends Vault {
         }
 
         entry.times.update();
+    }
+
+    public async getVaultPasswordLastChangeDate(): Promise<Date | null> {
+        return this.vault?.meta.keyChanged ?? null;
+    }
+
+    public async getPasswordUseCount(password: SecretValue<string>): Promise<number> {
+        const entries = await this.getAllEntries();
+
+        const matchingEntries = entries.filter((kdbxEntry) => {
+            console.log(kdbxEntry.fields.get('Password'));
+            console.log(password);
+            return kdbxEntry.fields.get('Password') == password.expose();
+        });
+
+        return matchingEntries.length;
     }
 }
