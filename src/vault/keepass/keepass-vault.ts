@@ -8,7 +8,7 @@ import { BaseVaultCredential } from '../../config/vault-password-prompt';
 import { Credential, CredentialWithoutSecrets } from '../../credentials';
 import { ReadonlyError } from '../../error/readonly-error';
 import { SecretValue } from '../../secret-value';
-import { checkCredentialSecurity, checkVaultSecurity } from '../../security-checker';
+import { SecurityChecker } from '../../security-checker';
 import { resolveSymlink } from '../../util/resolve-symlink';
 import {
     GetCredentialOptions,
@@ -65,12 +65,14 @@ export class KeepassVault extends Vault {
     public keyfilePath?: KeepassVaultOptions['keyfilePath'];
     private vault?: Kdbx;
     private openTries: number;
+    private securityChecker: SecurityChecker;
 
     constructor(keepassVaultPath: string, options: Partial<KeepassVaultOptions> = {}) {
         super(options);
         this.path = keepassVaultPath;
         this.keyfilePath = options.keyfilePath;
         this.openTries = 0;
+        this.securityChecker = new SecurityChecker();
     }
 
     public async open(): Promise<Kdbx> {
@@ -96,7 +98,12 @@ export class KeepassVault extends Vault {
         const keyfile = await this.openKeyfile(vaultCredential.multifactor);
         const vault = await this.openVault(vaultCredential, keyfile);
 
-        await checkVaultSecurity(this.logLevel, this.securityConfig, vault, vaultCredential);
+        await this.securityChecker.checkVaultSecurity(
+            this.logLevel,
+            this.securityConfig,
+            vault,
+            vaultCredential
+        );
 
         this.vault = vault;
         this.openTries = 0;
@@ -141,7 +148,7 @@ export class KeepassVault extends Vault {
 
         const cred = createKeepassCredential(entry);
         if (opts.secure !== false) {
-            await checkCredentialSecurity(this.securityConfig, cred, this);
+            await this.securityChecker.checkCredentialSecurity(this.securityConfig, cred, this);
         }
         return cred;
     }
@@ -162,7 +169,7 @@ export class KeepassVault extends Vault {
 
         const cred = createKeepassCredential(entry);
         if (opts.secure !== false) {
-            await checkCredentialSecurity(this.securityConfig, cred, this);
+            await this.securityChecker.checkCredentialSecurity(this.securityConfig, cred, this);
         }
         return cred;
     }

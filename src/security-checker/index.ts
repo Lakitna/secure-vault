@@ -34,89 +34,87 @@ export interface credentialRuleParameters {
     credential: Credential;
 }
 
-let credentialRuleset: Rulebook<credentialRuleParameters>;
-function getCredentialRuleset(config: Partial<RulebookConfig>) {
-    if (credentialRuleset) return credentialRuleset;
-
-    const rules = new Rulebook<credentialRuleParameters>(config);
-
-    rules.add(credentialAllowExpired);
-    rules.add(credentialPasswordAge);
-    rules.add(credentialPasswordComplexityCharacterCategories);
-    rules.add(credentialPasswordComplexityForbidUrl);
-    rules.add(credentialPasswordComplexityForbidUsername);
-    rules.add(credentialPasswordComplexityForbidReuse);
-    rules.add(credentialPasswordLength);
-    rules.add(credentialRequireExpiration);
-
-    credentialRuleset = rules;
-    return credentialRuleset;
-}
-
-export async function checkCredentialSecurity(
-    config: ResolvedSecurityConfig,
-    credential: Credential,
-    vault: KeepassVault
-): Promise<void> {
-    const rulebook = await getCredentialRuleset({
-        verboseness: vault.logLevel,
-    });
-
-    try {
-        await rulebook.enforce('**/*', { config, credential, vault });
-    } catch (error: unknown) {
-        if (error instanceof RuleError) {
-            throw new CredentialRuleError(credential, error);
-        }
-        throw new Error('Unexpected error type', { cause: error });
-    }
-}
-
 export interface vaultRuleParameters {
     config: ResolvedSecurityConfig;
     vault: Kdbx;
     vaultCredential: BaseVaultCredential;
 }
 
-let vaultRuleset: Rulebook<vaultRuleParameters>;
-function getVaultRuleset(config: Partial<RulebookConfig>) {
-    if (vaultRuleset) return vaultRuleset;
+export class SecurityChecker {
+    rulesetCredential: Rulebook<credentialRuleParameters>;
+    rulesetVault: Rulebook<vaultRuleParameters>;
 
-    const rules = new Rulebook<vaultRuleParameters>(config);
+    constructor() {
+        this.rulesetCredential = this.buildCredentialRuleset({});
+        this.rulesetVault = this.buildVaultRuleset({});
+    }
 
-    rules.add(vaultPasswordAge);
-    rules.add(vaultPasswordComplexityCharacterCategories);
-    rules.add(vaultPasswordComplexityCharacterForbidReuse);
-    rules.add(vaultPasswordLength);
+    private buildCredentialRuleset(config: Partial<RulebookConfig>) {
+        const ruleset = new Rulebook<credentialRuleParameters>(config);
 
-    rules.add(keepassVaultDecryptionTime);
-    rules.add(keepassVaultKeyfileRequire);
-    rules.add(keepassVaultKeyfileStoredWithCode);
-    rules.add(keepassVaultPasswordComplexityCharacterForbidVaultName);
-    rules.add(keepassVaultPasswordComplexityCharacterForbidVaultPath);
-    rules.add(keepassVaultStoredWithCode);
-    rules.add(keepassVaultStoredWithKeyfile);
+        ruleset.add(credentialAllowExpired);
+        ruleset.add(credentialPasswordAge);
+        ruleset.add(credentialPasswordComplexityCharacterCategories);
+        ruleset.add(credentialPasswordComplexityForbidUrl);
+        ruleset.add(credentialPasswordComplexityForbidUsername);
+        ruleset.add(credentialPasswordComplexityForbidReuse);
+        ruleset.add(credentialPasswordLength);
+        ruleset.add(credentialRequireExpiration);
 
-    vaultRuleset = rules;
-    return vaultRuleset;
-}
+        return ruleset;
+    }
 
-export async function checkVaultSecurity(
-    logLevel: RulebookConfig['verboseness'],
-    config: ResolvedSecurityConfig,
-    vault: Kdbx,
-    vaultCredential: BaseVaultCredential
-): Promise<void> {
-    const rulebook = await getVaultRuleset({
-        verboseness: logLevel,
-    });
+    private buildVaultRuleset(config: Partial<RulebookConfig>) {
+        const ruleset = new Rulebook<vaultRuleParameters>(config);
 
-    try {
-        await rulebook.enforce('**/*', { config, vault, vaultCredential });
-    } catch (error) {
-        if (error instanceof RuleError) {
-            throw new VaultRuleError(vault, error);
+        ruleset.add(vaultPasswordAge);
+        ruleset.add(vaultPasswordComplexityCharacterCategories);
+        ruleset.add(vaultPasswordComplexityCharacterForbidReuse);
+        ruleset.add(vaultPasswordLength);
+
+        ruleset.add(keepassVaultDecryptionTime);
+        ruleset.add(keepassVaultKeyfileRequire);
+        ruleset.add(keepassVaultKeyfileStoredWithCode);
+        ruleset.add(keepassVaultPasswordComplexityCharacterForbidVaultName);
+        ruleset.add(keepassVaultPasswordComplexityCharacterForbidVaultPath);
+        ruleset.add(keepassVaultStoredWithCode);
+        ruleset.add(keepassVaultStoredWithKeyfile);
+
+        return ruleset;
+    }
+
+    async checkCredentialSecurity(
+        config: ResolvedSecurityConfig,
+        credential: Credential,
+        vault: KeepassVault
+    ): Promise<void> {
+        this.rulesetCredential.config.set({ verboseness: vault.logLevel });
+
+        try {
+            await this.rulesetCredential.enforce('**/*', { config, credential, vault });
+        } catch (error: unknown) {
+            if (error instanceof RuleError) {
+                throw new CredentialRuleError(credential, error);
+            }
+            throw new Error('Unexpected error type', { cause: error });
         }
-        throw new Error('Unexpected error type', { cause: error });
+    }
+
+    async checkVaultSecurity(
+        logLevel: RulebookConfig['verboseness'],
+        config: ResolvedSecurityConfig,
+        vault: Kdbx,
+        vaultCredential: BaseVaultCredential
+    ): Promise<void> {
+        this.rulesetVault.config.set({ verboseness: logLevel });
+
+        try {
+            await this.rulesetVault.enforce('**/*', { config, vault, vaultCredential });
+        } catch (error) {
+            if (error instanceof RuleError) {
+                throw new VaultRuleError(vault, error);
+            }
+            throw new Error('Unexpected error type', { cause: error });
+        }
     }
 }
