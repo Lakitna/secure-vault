@@ -329,12 +329,15 @@ export class KeepassVault extends Vault {
                     continue;
                 }
 
-                const casedKey =
-                    key === 'url'
-                        ? 'URL'
-                        : key === 'username'
-                        ? 'UserName'
-                        : camelcase(key, { pascalCase: true });
+                let casedKey;
+                if (key === 'url') {
+                    casedKey = 'URL';
+                } else if (key === 'username') {
+                    casedKey = 'UserName';
+                } else {
+                    casedKey = camelcase(key, { pascalCase: true });
+                }
+
                 entry.fields.set(casedKey, value);
             }
         }
