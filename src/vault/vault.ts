@@ -4,15 +4,15 @@ import {
     resolveSecurityConfig,
     SecurityConfig,
     securityConfigPresetNames,
-} from './config/security';
-import { BaseVaultCredential } from './config/vault-password-prompt';
-import { Credential, CredentialData, CredentialWithoutSecrets } from './credentials';
-import { SecretValue } from './secret-value';
+} from '../config/security';
+import { BaseVaultCredential } from '../config/vault-password-prompt';
+import { Credential, CredentialData, CredentialWithoutSecrets } from '../credentials';
+import { SecretValue } from '../secret-value';
 import {
     forgetRememberedPassword,
     getRememberedPassword,
     rememberPassword,
-} from './util/remember-password';
+} from '../util/remember-password';
 
 export interface VaultOptions {
     securityConfig: securityConfigPresetNames | Partial<SecurityConfig>;

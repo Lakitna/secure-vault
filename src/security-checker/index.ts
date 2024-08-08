@@ -5,7 +5,7 @@ import { BaseVaultCredential } from '../config/vault-password-prompt';
 import { Credential } from '../credentials';
 import { CredentialRuleError } from '../error/credential-error';
 import { VaultRuleError } from '../error/vault-error';
-import { KeepassVault } from '../keepass/keepass-vault';
+import { KeepassVault } from '../vault/keepass/keepass-vault';
 
 import { credentialAllowExpired } from './credential/credential-allow-expired';
 import { credentialRequireExpiration } from './credential/credential-require-expiration';

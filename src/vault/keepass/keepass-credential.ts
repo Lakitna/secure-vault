@@ -5,8 +5,8 @@ import {
     CredentialData,
     CredentialDataWithoutSecrets,
     CredentialWithoutSecrets,
-} from '../credentials';
-import { SecretValue } from '../secret-value';
+} from '../../credentials';
+import { SecretValue } from '../../secret-value';
 
 /**
  * Create a credentials object from a kdbx entry

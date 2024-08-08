@@ -1,7 +1,7 @@
 import { Rule } from 'rulebound';
 import { credentialRuleParameters } from '../../..';
 import { Credential } from '../../../../credentials';
-import { Vault } from '../../../../vault';
+import { Vault } from '../../../../vault/vault';
 
 export function credentialPasswordComplexityForbidReuse() {
     return new Rule<credentialRuleParameters>('credential/password/complexity/forbid-reuse')

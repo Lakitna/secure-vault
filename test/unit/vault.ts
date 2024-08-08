@@ -3,7 +3,7 @@ import esmock from 'esmock';
 import sinon from 'sinon';
 import { SecretValue } from '../../src';
 import { BaseVaultCredential } from '../../src/config/vault-password-prompt';
-import { Vault, VaultOptions } from '../../src/vault';
+import { Vault, VaultOptions } from '../../src/vault/vault';
 
 describe('Abstract vault', () => {
     it('constructs with default config', () => {
@@ -43,7 +43,7 @@ describe('Abstract vault', () => {
             const getRememberedPasswordStub = sinon.stub();
             const rememberPasswordStub = sinon.stub();
             const mockedModule = await esmock(
-                '../../src/vault.ts',
+                '../../src/vault/vault.ts',
                 import.meta.url,
                 {
                     '../../src/util/remember-password.ts': {
@@ -80,7 +80,7 @@ describe('Abstract vault', () => {
             const getRememberedPasswordStub = sinon.stub();
             const rememberPasswordStub = sinon.stub();
             const mockedModule = await esmock(
-                '../../src/vault.ts',
+                '../../src/vault/vault.ts',
                 import.meta.url,
                 {
                     '../../src/util/remember-password.ts': {
@@ -111,7 +111,7 @@ describe('Abstract vault', () => {
             const getRememberedPasswordStub = sinon.stub().resolves(null);
             const rememberPasswordStub = sinon.stub();
             const mockedModule = await esmock(
-                '../../src/vault.ts',
+                '../../src/vault/vault.ts',
                 import.meta.url,
                 {
                     '../../src/util/remember-password.ts': {
@@ -148,7 +148,7 @@ describe('Abstract vault', () => {
                 .resolves(new SecretValue('string', 'remembered-password'));
             const rememberPasswordStub = sinon.stub();
             const mockedModule = await esmock(
-                '../../src/vault.ts',
+                '../../src/vault/vault.ts',
                 import.meta.url,
                 {
                     '../../src/util/remember-password.ts': {
@@ -191,7 +191,7 @@ describe('Abstract vault', () => {
             const getRememberedPasswordStub = sinon.stub();
             const rememberPasswordStub = sinon.stub();
             const mockedModule = await esmock(
-                '../../src/vault.ts',
+                '../../src/vault/vault.ts',
                 import.meta.url,
                 {
                     '../../src/util/remember-password.ts': {

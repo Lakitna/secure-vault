@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { KeepassVault } from '../../../src';
-import { Vault } from '../../../src/vault';
+import { Vault } from '../../../src/vault/vault';
 
 describe.skip('Keepass vault', () => {
     it('constructs with default config', () => {

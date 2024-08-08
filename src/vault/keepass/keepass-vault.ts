@@ -3,13 +3,13 @@ import camelcase from 'camelcase';
 import { readFile, writeFile } from 'fs/promises';
 import kdbxweb, { Kdbx } from 'kdbxweb';
 import { RulebookConfig } from 'rulebound';
-import { SecurityConfig, securityConfigPresetNames } from '../config/security';
-import { BaseVaultCredential } from '../config/vault-password-prompt';
-import { Credential, CredentialWithoutSecrets } from '../credentials';
-import { ReadonlyError } from '../error/readonly-error';
-import { SecretValue } from '../secret-value';
-import { checkCredentialSecurity, checkVaultSecurity } from '../security-checker';
-import { resolveSymlink } from '../util/resolve-symlink';
+import { SecurityConfig, securityConfigPresetNames } from '../../config/security';
+import { BaseVaultCredential } from '../../config/vault-password-prompt';
+import { Credential, CredentialWithoutSecrets } from '../../credentials';
+import { ReadonlyError } from '../../error/readonly-error';
+import { SecretValue } from '../../secret-value';
+import { checkCredentialSecurity, checkVaultSecurity } from '../../security-checker';
+import { resolveSymlink } from '../../util/resolve-symlink';
 import {
     GetCredentialOptions,
     UpdateCredentialInput,
