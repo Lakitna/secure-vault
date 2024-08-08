@@ -38,13 +38,16 @@ export interface VaultConnectionDetails {
 
 export type GetCredentialOptions = {
     /**
-     * Don't execute security checks.
+     * Should we perform security checks?
      *
-     * You probably don't want to use this.
+     * You probably don't want to disable this.
      *
      * @default true
      */
     secure: boolean;
+};
+export const defaultGetCredentialOptions: GetCredentialOptions = {
+    secure: true,
 };
 
 export type UpdateCredentialInput = Partial<{

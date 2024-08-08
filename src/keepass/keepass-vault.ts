@@ -10,7 +10,12 @@ import { ReadonlyError } from '../error/readonly-error';
 import { SecretValue } from '../secret-value';
 import { checkCredentialSecurity, checkVaultSecurity } from '../security-checker';
 import { resolveSymlink } from '../util/resolve-symlink';
-import { GetCredentialOptions, UpdateCredentialInput, Vault } from '../vault';
+import {
+    GetCredentialOptions,
+    UpdateCredentialInput,
+    Vault,
+    defaultGetCredentialOptions,
+} from '../vault';
 import { createCredentialWithoutSecrets, createKeepassCredential } from './keepass-credential';
 
 /**
@@ -118,6 +123,12 @@ export class KeepassVault extends Vault {
         entryTitle: string,
         options?: GetCredentialOptions
     ): Promise<Credential | null> {
+        const opts = Object.assign(
+            {},
+            defaultGetCredentialOptions,
+            options
+        ) as GetCredentialOptions;
+
         const vault = await this.open();
 
         const defaultGroup = vault.getDefaultGroup();
@@ -129,7 +140,7 @@ export class KeepassVault extends Vault {
         if (!entry) return null;
 
         const cred = createKeepassCredential(entry);
-        if (options && options.secure === false) {
+        if (opts.secure !== false) {
             await checkCredentialSecurity(this.securityConfig, cred, this);
         }
         return cred;
@@ -139,12 +150,18 @@ export class KeepassVault extends Vault {
         uuid: string,
         options?: GetCredentialOptions
     ): Promise<Credential | null> {
+        const opts = Object.assign(
+            {},
+            defaultGetCredentialOptions,
+            options
+        ) as GetCredentialOptions;
+
         const vault = await this.open();
         const entry = await this.getEntryById(vault, uuid);
         if (!entry) return null;
 
         const cred = createKeepassCredential(entry);
-        if (options === undefined || options.secure === true) {
+        if (opts.secure !== false) {
             await checkCredentialSecurity(this.securityConfig, cred, this);
         }
         return cred;

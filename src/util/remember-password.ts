@@ -1,5 +1,5 @@
 import keytar from 'keytar';
-import path from 'node:path';
+import path from 'node:path/posix';
 import { SecretValue } from '../secret-value';
 
 const serviceName = 'secure-vault';
