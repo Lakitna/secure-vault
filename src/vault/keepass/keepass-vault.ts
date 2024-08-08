@@ -8,7 +8,7 @@ import { BaseVaultCredential } from '../../config/vault-password-prompt';
 import { Credential, CredentialWithoutSecrets } from '../../credentials';
 import { ReadonlyError } from '../../error/readonly-error';
 import { SecretValue } from '../../secret-value';
-import { SecurityChecker } from '../../security-checker';
+import { SecurityChecker, vaultRuleParameters } from '../../security-checker';
 import { resolveSymlink } from '../../util/resolve-symlink';
 import {
     GetCredentialOptions,
@@ -60,10 +60,14 @@ interface KeepassVaultOptions {
     logLevel: RulebookConfig['verboseness'];
 }
 
+export interface vaultRuleParametersKeepass extends vaultRuleParameters {
+    vault: KeepassVault;
+}
+
 export class KeepassVault extends Vault {
     public path: string;
     public keyfilePath?: KeepassVaultOptions['keyfilePath'];
-    private vault?: Kdbx;
+    public vault?: Kdbx;
     private openTries: number;
     private securityChecker: SecurityChecker;
 
@@ -99,16 +103,15 @@ export class KeepassVault extends Vault {
         );
 
         const keyfile = await this.openKeyfile(vaultCredential.multifactor);
-        const vault = await this.openVault(vaultCredential, keyfile);
+        this.vault = await this.openVault(vaultCredential, keyfile);
 
         await this.securityChecker.checkVaultSecurity(
             this.logLevel,
             this.securityConfig,
-            vault,
+            this,
             vaultCredential
         );
 
-        this.vault = vault;
         this.openTries = 0;
         return this.vault;
     }

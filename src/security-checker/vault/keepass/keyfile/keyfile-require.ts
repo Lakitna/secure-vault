@@ -1,8 +1,8 @@
 import { Rule } from 'rulebound';
-import { vaultRuleParameters } from '../../..';
+import { KeepassVault, vaultRuleParametersKeepass } from '../../../../vault/keepass/keepass-vault';
 
 export function keepassVaultKeyfileRequire() {
-    return new Rule<vaultRuleParameters>('keepass/keyfile/require')
+    return new Rule<vaultRuleParametersKeepass>('keepass/keyfile/require')
         .describe(
             `
             Enforce a keyfile as a second authentication factor.
@@ -16,7 +16,11 @@ export function keepassVaultKeyfileRequire() {
             the master password is somehow compromised.
             `
         )
-        .enable(({ config }) => {
+        .enable(({ config, vault }) => {
+            if (!(vault instanceof KeepassVault)) {
+                return 'Not a Keepass vault';
+            }
+
             if (!config.vaultRestrictions.requireKeyfile) {
                 return 'Disabled by security config `requireKeyfile`';
             }

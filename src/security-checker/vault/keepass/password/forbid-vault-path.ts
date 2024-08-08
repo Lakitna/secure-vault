@@ -1,9 +1,9 @@
 import { Rule } from 'rulebound';
-import { vaultRuleParameters } from '../../..';
 import { detectPartialStringMatch } from '../../../../util/partial-string-match';
+import { KeepassVault, vaultRuleParametersKeepass } from '../../../../vault/keepass/keepass-vault';
 
 export function keepassVaultPasswordComplexityCharacterForbidVaultPath() {
-    return new Rule<vaultRuleParameters>('keepass/password/complexity/forbid-vault-path')
+    return new Rule<vaultRuleParametersKeepass>('keepass/password/complexity/forbid-vault-path')
         .describe(
             `
             Ensure that the vault password does not contain part of the vault file path.
@@ -16,7 +16,11 @@ export function keepassVaultPasswordComplexityCharacterForbidVaultPath() {
             Detection is done with fuzzy matching.
             `
         )
-        .enable(async ({ config, vaultCredential }) => {
+        .enable(async ({ config, vault, vaultCredential }) => {
+            if (!(vault instanceof KeepassVault)) {
+                return 'Not a Keepass vault';
+            }
+
             const forbidVaultPath = config.vaultRestrictions.passwordComplexity.forbidVaultPath;
             if (!forbidVaultPath) {
                 return 'Disabled by security config `forbidVaultPath`';

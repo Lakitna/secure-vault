@@ -1,10 +1,10 @@
 import { Rule } from 'rulebound';
-import { vaultRuleParameters } from '../..';
 import file from '../../../util/file-with-code';
 import { resolveSymlink } from '../../../util/resolve-symlink';
+import { KeepassVault, vaultRuleParametersKeepass } from '../../../vault/keepass/keepass-vault';
 
 export function keepassVaultStoredWithCode() {
-    return new Rule<vaultRuleParameters>('keepass/stored-with-code')
+    return new Rule<vaultRuleParametersKeepass>('keepass/stored-with-code')
         .describe(
             `
             Vaults are often used for authenticating our application. We don't want to store our
@@ -22,7 +22,11 @@ export function keepassVaultStoredWithCode() {
             Any symlinks are resolved recursively. Only the actual file path is used.
             `
         )
-        .enable(async ({ config }) => {
+        .enable(async ({ config, vault }) => {
+            if (!(vault instanceof KeepassVault)) {
+                return 'Not a Keepass vault';
+            }
+
             const allowVaultWithCode = config.vaultRestrictions.allowVaultWithCode;
 
             if (allowVaultWithCode === true) {

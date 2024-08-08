@@ -1,9 +1,9 @@
 import { Rule } from 'rulebound';
-import { vaultRuleParameters } from '../../..';
 import { detectPartialStringMatch } from '../../../../util/partial-string-match';
+import { KeepassVault, vaultRuleParametersKeepass } from '../../../../vault/keepass/keepass-vault';
 
 export function keepassVaultPasswordComplexityCharacterForbidVaultName() {
-    return new Rule<vaultRuleParameters>('keepass/password/complexity/forbid-vault-name')
+    return new Rule<vaultRuleParametersKeepass>('keepass/password/complexity/forbid-vault-name')
         .describe(
             `
             Ensure that the vault password does not contain part of the vault name.
@@ -17,12 +17,16 @@ export function keepassVaultPasswordComplexityCharacterForbidVaultName() {
             `
         )
         .enable(async ({ config, vault, vaultCredential }) => {
+            if (!(vault instanceof KeepassVault)) {
+                return 'Not a Keepass vault';
+            }
+
             const forbidVaultName = config.vaultRestrictions.passwordComplexity.forbidVaultName;
             if (!forbidVaultName) {
                 return 'Disabled by security config `forbidVaultName`';
             }
 
-            const vaultName = vault.meta.name;
+            const vaultName = vault.vault?.meta.name;
             if (!vaultName) {
                 return 'No vault name, nothing to check';
             }
@@ -35,7 +39,7 @@ export function keepassVaultPasswordComplexityCharacterForbidVaultName() {
             return true;
         })
         .define(async ({ vault, vaultCredential }) => {
-            const vaultName = vault.meta.name as string;
+            const vaultName = vault.vault?.meta.name as string;
             const password = vaultCredential.password;
 
             const match = detectPartialStringMatch(password, vaultName, 'strict');

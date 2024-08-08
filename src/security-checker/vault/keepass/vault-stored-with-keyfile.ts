@@ -1,12 +1,12 @@
 import { dirname } from 'path';
 import { Rule } from 'rulebound';
-import { vaultRuleParameters } from '../..';
 import git from '../../../util/git';
 import npm from '../../../util/npm';
 import { resolveSymlink } from '../../../util/resolve-symlink';
+import { KeepassVault, vaultRuleParametersKeepass } from '../../../vault/keepass/keepass-vault';
 
 export function keepassVaultStoredWithKeyfile() {
-    return new Rule<vaultRuleParameters>('keepass/stored-with-keyfile')
+    return new Rule<vaultRuleParametersKeepass>('keepass/stored-with-keyfile')
         .describe(
             `
             The keyfile is used as a second authentication factor. We don't want to store our
@@ -25,7 +25,11 @@ export function keepassVaultStoredWithKeyfile() {
             Any symlinks are resolved recursively. Only the actual file paths are used.
             `
         )
-        .enable(async ({ config, vaultCredential }) => {
+        .enable(async ({ config, vault, vaultCredential }) => {
+            if (!(vault instanceof KeepassVault)) {
+                return 'Not a Keepass vault';
+            }
+
             const allowVaultAndKeyfileSameLocation =
                 config.vaultRestrictions.allowVaultAndKeyfileSameLocation;
             if (allowVaultAndKeyfileSameLocation === true) {

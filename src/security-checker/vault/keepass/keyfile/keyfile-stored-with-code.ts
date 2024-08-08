@@ -1,10 +1,10 @@
 import { Rule } from 'rulebound';
-import { vaultRuleParameters } from '../../..';
 import file from '../../../../util/file-with-code';
 import { resolveSymlink } from '../../../../util/resolve-symlink';
+import { KeepassVault, vaultRuleParametersKeepass } from '../../../../vault/keepass/keepass-vault';
 
 export function keepassVaultKeyfileStoredWithCode() {
-    return new Rule<vaultRuleParameters>('keepass/keyfile/stored-with-code')
+    return new Rule<vaultRuleParametersKeepass>('keepass/keyfile/stored-with-code')
         .describe(
             `
             The keyfile is used as a second authentication factor. We don't want to store our
@@ -23,7 +23,11 @@ export function keepassVaultKeyfileStoredWithCode() {
             Any symlinks are resolved recursively. Only the actual file path is used.
             `
         )
-        .enable(({ config, vaultCredential }) => {
+        .enable(({ config, vault, vaultCredential }) => {
+            if (!(vault instanceof KeepassVault)) {
+                return 'Not a Keepass vault';
+            }
+
             if (config.vaultRestrictions.allowKeyfileWithCode === true) {
                 return 'Disabled by security config `allowKeyfileWithCode`';
             }

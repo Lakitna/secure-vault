@@ -1,8 +1,8 @@
 import { Rule } from 'rulebound';
-import { vaultRuleParameters } from '../..';
+import { KeepassVault, vaultRuleParametersKeepass } from '../../../vault/keepass/keepass-vault';
 
 export function keepassVaultDecryptionTime() {
-    return new Rule<vaultRuleParameters>('keepass/decryption-time')
+    return new Rule<vaultRuleParametersKeepass>('keepass/decryption-time')
         .describe(
             `
                 Enforce a minimum time for opening the vault.
@@ -13,13 +13,17 @@ export function keepassVaultDecryptionTime() {
                 `
         )
         .enable(({ config, vault }) => {
+            if (!(vault instanceof KeepassVault)) {
+                return 'Not a Keepass vault';
+            }
+
             const minDecryptionTime = config.vaultRestrictions.minDecryptionTime;
             if (minDecryptionTime < 0) {
                 throw new TypeError('Configuration error: Min decryption time can not be below 0');
             }
 
             const decryptionTime = Number(
-                vault.meta.customData.get('KPXC_DECRYPTION_TIME_PREFERENCE')?.value
+                vault.vault?.meta.customData.get('KPXC_DECRYPTION_TIME_PREFERENCE')?.value
             );
             if (Number.isNaN(decryptionTime)) {
                 // It looks like it it's actually pretty likely. It feels like the feature/setting
@@ -32,7 +36,7 @@ export function keepassVaultDecryptionTime() {
         .define(({ config, vault }) => {
             const minDecryptionTime = config.vaultRestrictions.minDecryptionTime;
             const decryptionTime = Number(
-                vault.meta.customData.get('KPXC_DECRYPTION_TIME_PREFERENCE')?.value
+                vault.vault?.meta.customData.get('KPXC_DECRYPTION_TIME_PREFERENCE')?.value
             );
 
             if (decryptionTime < minDecryptionTime) {
