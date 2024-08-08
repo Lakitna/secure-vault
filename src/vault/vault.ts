@@ -29,6 +29,11 @@ export interface VaultOptions {
      * @default 'info'
      */
     logLevel: RulebookConfig['verboseness'];
+
+    /**
+     * Vault ID
+     */
+    id: string;
 }
 
 export interface VaultConnectionDetails {

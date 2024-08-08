@@ -70,6 +70,9 @@ export class KeepassVault extends Vault {
     constructor(keepassVaultPath: string, options: Partial<KeepassVaultOptions> = {}) {
         super(options);
         this.path = keepassVaultPath;
+        if (!this.id) {
+            this.id = this.path;
+        }
         this.keyfilePath = options.keyfilePath;
         this.openTries = 0;
         this.securityChecker = new SecurityChecker();
