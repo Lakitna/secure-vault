@@ -43,14 +43,14 @@ describe('Security checker', () => {
             );
         });
 
-        it('throws a CredentialRuleError when a rule fails', () => {
+        it('throws a CredentialRuleError when a rule fails', async () => {
             sinon.stub(Rulebook.prototype, 'add');
             sinon
                 .stub(Rulebook.prototype, 'enforce')
                 .rejects(new RuleError(new Rule('amazing-rule'), 'oh no a fail'));
 
             const checker = new SecurityChecker();
-            expect(
+            await expect(
                 checker.checkCredentialSecurity(
                     // @ts-expect-error Don't care about contents
                     { config: true },
@@ -87,14 +87,14 @@ describe('Security checker', () => {
             );
         });
 
-        it('throws a VaultRuleError when a rule fails', () => {
+        it('throws a VaultRuleError when a rule fails', async () => {
             sinon.stub(Rulebook.prototype, 'add');
             sinon
                 .stub(Rulebook.prototype, 'enforce')
                 .rejects(new RuleError(new Rule('amazing-rule'), 'oh no a fail'));
 
             const checker = new SecurityChecker();
-            expect(
+            await expect(
                 checker.checkVaultSecurity(
                     'info',
                     // @ts-expect-error Don't care about contents
