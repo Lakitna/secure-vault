@@ -103,7 +103,7 @@ function Encrypt-String($unencryptedString, $publicKeyXml) {
     [byte[]] $unencryptedBytes = [Text.Encoding]::UTF8.GetBytes($unencryptedString)
     $ciphertext = $rsa.Encrypt(
         $unencryptedBytes,
-        [System.Security.Cryptography.RSAEncryptionPadding]::Pkcs1
+        [System.Security.Cryptography.RSAEncryptionPadding]::OaepSHA1
     )
 
     $ciphertextB64 = [System.Convert]::ToBase64String($ciphertext)

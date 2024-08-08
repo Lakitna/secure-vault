@@ -35,6 +35,10 @@ export const promptPopup: userPasswordPrompt = async function (
         throw new Error(`The password prompt method 'popup' is only supported on Windows`);
     }
 
+    if (keyfilePath === undefined) {
+        keyfilePath = '';
+    }
+
     const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
         modulusLength: 2048,
     });
@@ -155,7 +159,7 @@ function decryptString(encryptedBuffer: Buffer, privateKey: crypto.KeyObject): S
     const decryptedBuffer = crypto.privateDecrypt(
         {
             key: privateKey,
-            padding: crypto.constants.RSA_PKCS1_PADDING,
+            padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
         },
         encryptedBuffer
     );
