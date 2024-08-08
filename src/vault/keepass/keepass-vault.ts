@@ -395,9 +395,12 @@ export class KeepassVault extends Vault {
         const entries = await this.getAllEntries();
 
         const matchingEntries = entries.filter((kdbxEntry) => {
-            console.log(kdbxEntry.fields.get('Password'));
-            console.log(password);
-            return kdbxEntry.fields.get('Password') == password.expose();
+            const entryPassword = kdbxEntry.fields.get('Password')?.valueOf();
+            if (!(entryPassword instanceof kdbxweb.ProtectedValue)) {
+                return false;
+            }
+
+            return password.equals(new SecretValue('string', entryPassword));
         });
 
         return matchingEntries.length;
