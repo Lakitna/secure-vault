@@ -1,4 +1,4 @@
-import package_ from './package.json' assert { type: 'json' };
+import package_ from './package.json' with { type: 'json' };
 import typescript from '@rollup/plugin-typescript';
 import externals from 'rollup-plugin-node-externals';
 import copy from 'rollup-plugin-copy';
