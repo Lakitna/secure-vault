@@ -6,8 +6,8 @@ import { credentialPasswordAge } from '../../../../../src/security-checker/crede
 import { getBaseVault } from '../../../support/base-vault';
 import { credentialRuleParam } from '../../../support/credential-rule-param';
 
-describe('Credential security check: credential password age', () => {
-    const vault = getBaseVault();
+describe('Credential security check: credential password age', async () => {
+    const vault = await getBaseVault();
     const rulebook = new Rulebook<credentialRuleParameters>();
     let rule: Rule<credentialRuleParameters>;
 

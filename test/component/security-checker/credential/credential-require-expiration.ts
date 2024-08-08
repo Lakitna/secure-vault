@@ -6,8 +6,8 @@ import { credentialRequireExpiration } from '../../../../src/security-checker/cr
 import { getBaseVault } from '../../support/base-vault';
 import { credentialRuleParam } from '../../support/credential-rule-param';
 
-describe('Credential security check: credential require expiration', () => {
-    const vault = getBaseVault();
+describe('Credential security check: credential require expiration', async () => {
+    const vault = await getBaseVault();
     const rulebook = new Rulebook<credentialRuleParameters>();
     let rule: Rule<credentialRuleParameters>;
 

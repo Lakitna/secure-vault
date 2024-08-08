@@ -7,8 +7,8 @@ import { credentialPasswordComplexityForbidUrl } from '../../../../../../src/sec
 import { getBaseVault } from '../../../../support/base-vault';
 import { credentialRuleParam } from '../../../../support/credential-rule-param';
 
-describe('Credential security check: credential password forbid url', () => {
-    const vault = getBaseVault();
+describe('Credential security check: credential password forbid url', async () => {
+    const vault = await getBaseVault();
     const rulebook = new Rulebook<credentialRuleParameters>();
     let rule: Rule<credentialRuleParameters>;
 

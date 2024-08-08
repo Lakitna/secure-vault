@@ -7,8 +7,8 @@ import { vaultPasswordComplexityCharacterForbidReuse } from '../../../../../../s
 import { getBaseVault } from '../../../../support/base-vault';
 import { vaultRuleParams } from '../../../../support/vault-rule-param';
 
-describe('Vault security check: vault password forbid reuse', () => {
-    const vault = getBaseVault();
+describe('Vault security check: vault password forbid reuse', async () => {
+    const vault = await getBaseVault();
     const rulebook = new Rulebook<vaultRuleParameters>();
     let rule: Rule<vaultRuleParameters>;
 
@@ -42,7 +42,7 @@ describe('Vault security check: vault password forbid reuse', () => {
         params.vaultCredential.password = new SecretValue('string', 'lorum-ipsum');
 
         await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
-            `Vault password is used by a credential: 'Root/lorum'`
+            `Vault password is also used by 1 credential(s)`
         );
     });
 

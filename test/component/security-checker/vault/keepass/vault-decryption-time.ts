@@ -1,13 +1,15 @@
 import { expect } from 'chai';
+import { Kdbx } from 'kdbxweb';
 import Rulebook, { Rule } from 'rulebound';
 import sinon from 'sinon';
 import { vaultRuleParameters } from '../../../../../src/security-checker';
 import { keepassVaultDecryptionTime } from '../../../../../src/security-checker/vault/keepass/vault-decryption-time';
+import { vaultRuleParametersKeepass } from '../../../../../src/vault/keepass/keepass-vault';
 import { getBaseVault } from '../../../support/base-vault';
 import { vaultRuleParams } from '../../../support/vault-rule-param';
 
-describe('Vault security check: vault decryption time', () => {
-    const vault = getBaseVault();
+describe('Vault security check: vault decryption time', async () => {
+    const vault = await getBaseVault();
     const rulebook = new Rulebook<vaultRuleParameters>();
     let rule: Rule<vaultRuleParameters>;
 
@@ -34,10 +36,12 @@ describe('Vault security check: vault decryption time', () => {
     });
 
     it('throws when the decryption time is too short', async () => {
-        const params = await vaultRuleParams(vault);
+        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
+            vault: { vault: Kdbx };
+        };
 
         params.config.vaultRestrictions.minDecryptionTime = 100;
-        params.vault.meta.customData.set('KPXC_DECRYPTION_TIME_PREFERENCE', { value: '50' });
+        params.vault.vault.meta.customData.set('KPXC_DECRYPTION_TIME_PREFERENCE', { value: '50' });
 
         await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
             'Vault decryption time is too short. Should be at least 100ms.'
@@ -45,19 +49,25 @@ describe('Vault security check: vault decryption time', () => {
     });
 
     it('does not throw when the decryption time is the exact min lenght', async () => {
-        const params = await vaultRuleParams(vault);
+        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
+            vault: { vault: Kdbx };
+        };
 
         params.config.vaultRestrictions.minDecryptionTime = 100;
-        params.vault.meta.customData.set('KPXC_DECRYPTION_TIME_PREFERENCE', { value: '100' });
+        params.vault.vault.meta.customData.set('KPXC_DECRYPTION_TIME_PREFERENCE', { value: '100' });
 
         await rulebook.enforce(rule.name, params);
     });
 
     it('does not throw when the decryption time is longer than minimum', async () => {
-        const params = await vaultRuleParams(vault);
+        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
+            vault: { vault: Kdbx };
+        };
 
         params.config.vaultRestrictions.minDecryptionTime = 0;
-        params.vault.meta.customData.set('KPXC_DECRYPTION_TIME_PREFERENCE', { value: '1000' });
+        params.vault.vault.meta.customData.set('KPXC_DECRYPTION_TIME_PREFERENCE', {
+            value: '1000',
+        });
 
         await rulebook.enforce(rule.name, params);
     });
@@ -70,10 +80,14 @@ describe('Vault security check: vault decryption time', () => {
         // @ts-expect-error Accessing a private var
         const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
 
-        const params = await vaultRuleParams(vault);
+        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
+            vault: { vault: Kdbx };
+        };
 
         params.config.vaultRestrictions.minDecryptionTime = 100;
-        params.vault.meta.customData.set('KPXC_DECRYPTION_TIME_PREFERENCE', { value: undefined });
+        params.vault.vault.meta.customData.set('KPXC_DECRYPTION_TIME_PREFERENCE', {
+            value: undefined,
+        });
 
         await rulebook.enforce(rule.name, params);
 

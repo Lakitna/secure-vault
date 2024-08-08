@@ -6,8 +6,8 @@ import { keepassVaultKeyfileRequire } from '../../../../../../src/security-check
 import { getBaseVault } from '../../../../support/base-vault';
 import { vaultRuleParams } from '../../../../support/vault-rule-param';
 
-describe('Vault security check: require keyfile', () => {
-    const vault = getBaseVault();
+describe('Vault security check: require keyfile', async () => {
+    const vault = await getBaseVault();
     const rulebook = new Rulebook<vaultRuleParameters>();
     let rule: Rule<vaultRuleParameters>;
 

@@ -17,6 +17,7 @@ describe('Abstract vault', () => {
 
     it('constructs with user config', () => {
         const opts: VaultOptions = {
+            id: 'test',
             readonly: false,
             logLevel: 'warn',
             securityConfig: 'none',

@@ -7,8 +7,8 @@ import { credentialPasswordComplexityForbidReuse } from '../../../../../../src/s
 import { getBaseVault } from '../../../../support/base-vault';
 import { credentialRuleParam } from '../../../../support/credential-rule-param';
 
-describe('Credential security check: credential password forbid reuse', () => {
-    const vault = getBaseVault();
+describe('Credential security check: credential password forbid reuse', async () => {
+    const vault = await getBaseVault();
     const rulebook = new Rulebook<credentialRuleParameters>();
     let rule: Rule<credentialRuleParameters>;
 

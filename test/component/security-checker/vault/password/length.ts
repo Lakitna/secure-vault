@@ -7,8 +7,8 @@ import { vaultPasswordLength } from '../../../../../src/security-checker/vault/p
 import { getBaseVault } from '../../../support/base-vault';
 import { vaultRuleParams } from '../../../support/vault-rule-param';
 
-describe('Vault security check: vault password length', () => {
-    const vault = getBaseVault();
+describe('Vault security check: vault password length', async () => {
+    const vault = await getBaseVault();
     const rulebook = new Rulebook<vaultRuleParameters>();
     let rule: Rule<vaultRuleParameters>;
 

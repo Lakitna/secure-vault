@@ -7,8 +7,8 @@ import { credentialPasswordComplexityCharacterCategories } from '../../../../../
 import { getBaseVault } from '../../../../support/base-vault';
 import { credentialRuleParam } from '../../../../support/credential-rule-param';
 
-describe('Credential security check: credential password character categories', () => {
-    const vault = getBaseVault();
+describe('Credential security check: credential password character categories', async () => {
+    const vault = await getBaseVault();
     const rulebook = new Rulebook<credentialRuleParameters>();
     let rule: Rule<credentialRuleParameters>;
 

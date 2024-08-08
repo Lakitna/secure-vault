@@ -1,14 +1,16 @@
 import { expect } from 'chai';
+import { Kdbx } from 'kdbxweb';
 import Rulebook, { Rule } from 'rulebound';
 import * as sinon from 'sinon';
 import { SecretValue } from '../../../../../../src';
 import { vaultRuleParameters } from '../../../../../../src/security-checker';
 import { keepassVaultPasswordComplexityCharacterForbidVaultName } from '../../../../../../src/security-checker/vault/keepass/password/forbid-vault-name';
+import { vaultRuleParametersKeepass } from '../../../../../../src/vault/keepass/keepass-vault';
 import { getBaseVault } from '../../../../support/base-vault';
 import { vaultRuleParams } from '../../../../support/vault-rule-param';
 
-describe('Vault security check: vault password forbid vault name', () => {
-    const vault = getBaseVault();
+describe('Vault security check: vault password forbid vault name', async () => {
+    const vault = await getBaseVault();
     const rulebook = new Rulebook<vaultRuleParameters>();
     let rule: Rule<vaultRuleParameters>;
 
@@ -35,11 +37,13 @@ describe('Vault security check: vault password forbid vault name', () => {
     });
 
     it('throws when the vault name contains the password', async () => {
-        const params = await vaultRuleParams(vault);
+        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
+            vault: { vault: Kdbx };
+        };
 
         params.config.vaultRestrictions.passwordComplexity.forbidVaultName = true;
         params.vaultCredential.password = new SecretValue('string', 'lorsum');
-        params.vault.meta.name = 'lorum-ipsum';
+        params.vault.vault.meta.name = 'lorum-ipsum';
 
         await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
             `Vault password contains (part of) the vault name`
@@ -54,10 +58,12 @@ describe('Vault security check: vault password forbid vault name', () => {
         // @ts-expect-error Accessing a private var
         const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
 
-        const params = await vaultRuleParams(vault);
+        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
+            vault: { vault: Kdbx };
+        };
         params.config.vaultRestrictions.passwordComplexity.forbidVaultName = false;
         params.vaultCredential.password = new SecretValue('string', 'lorum');
-        params.vault.meta.name = 'lorum-ipsum';
+        params.vault.vault.meta.name = 'lorum-ipsum';
 
         await rulebook.enforce(rule.name, params);
 
@@ -67,11 +73,13 @@ describe('Vault security check: vault password forbid vault name', () => {
     });
 
     it('does not throw when the password is different from the vault name', async () => {
-        const params = await vaultRuleParams(vault);
+        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
+            vault: { vault: Kdbx };
+        };
 
         params.config.vaultRestrictions.passwordComplexity.forbidVaultName = true;
         params.vaultCredential.password = new SecretValue('string', 'some-other-password');
-        params.vault.meta.name = 'lorum-ipsum';
+        params.vault.vault.meta.name = 'lorum-ipsum';
 
         await rulebook.enforce(rule.name, params);
     });
@@ -84,10 +92,12 @@ describe('Vault security check: vault password forbid vault name', () => {
         // @ts-expect-error Accessing a private var
         const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
 
-        const params = await vaultRuleParams(vault);
+        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
+            vault: { vault: Kdbx };
+        };
         params.config.vaultRestrictions.passwordComplexity.forbidVaultName = true;
         params.vaultCredential.password = new SecretValue('string', '');
-        params.vault.meta.name = 'lorum-ipsum';
+        params.vault.vault.meta.name = 'lorum-ipsum';
 
         await rulebook.enforce(rule.name, params);
 
@@ -104,11 +114,13 @@ describe('Vault security check: vault password forbid vault name', () => {
         // @ts-expect-error Accessing a private var
         const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
 
-        const params = await vaultRuleParams(vault);
+        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
+            vault: { vault: Kdbx };
+        };
 
         params.config.vaultRestrictions.passwordComplexity.forbidVaultName = true;
         params.vaultCredential.password = new SecretValue('string', 'lorum');
-        params.vault.meta.name = '';
+        params.vault.vault.meta.name = '';
 
         await rulebook.enforce(rule.name, params);
 

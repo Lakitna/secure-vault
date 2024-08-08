@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { KeepassVault, SecretValue } from '../../../src';
 
-export function getBaseVault() {
+export async function getBaseVault() {
     const vaultPath = fileURLToPath(new URL('base-test-vault.kdbx', import.meta.url));
     const vault = new KeepassVault(vaultPath, { securityConfig: 'none' });
 
@@ -12,5 +12,6 @@ export function getBaseVault() {
         multifactor: undefined,
     });
 
+    await vault.open();
     return vault;
 }

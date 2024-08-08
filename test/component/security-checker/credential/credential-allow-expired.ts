@@ -6,8 +6,8 @@ import { credentialAllowExpired } from '../../../../src/security-checker/credent
 import { getBaseVault } from '../../support/base-vault';
 import { credentialRuleParam } from '../../support/credential-rule-param';
 
-describe('Credential security check: allow expired credential', () => {
-    const vault = getBaseVault();
+describe('Credential security check: allow expired credential', async () => {
+    const vault = await getBaseVault();
     const rulebook = new Rulebook<credentialRuleParameters>();
     let rule: Rule<credentialRuleParameters>;
 

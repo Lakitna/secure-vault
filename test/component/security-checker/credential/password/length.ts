@@ -7,8 +7,8 @@ import { credentialPasswordLength } from '../../../../../src/security-checker/cr
 import { getBaseVault } from '../../../support/base-vault';
 import { credentialRuleParam } from '../../../support/credential-rule-param';
 
-describe('Credential security check: credential password length', () => {
-    const vault = getBaseVault();
+describe('Credential security check: credential password length', async () => {
+    const vault = await getBaseVault();
     const rulebook = new Rulebook<credentialRuleParameters>();
     let rule: Rule<credentialRuleParameters>;
 

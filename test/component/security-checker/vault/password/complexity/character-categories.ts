@@ -7,8 +7,8 @@ import { vaultPasswordComplexityCharacterCategories } from '../../../../../../sr
 import { getBaseVault } from '../../../../support/base-vault';
 import { vaultRuleParams } from '../../../../support/vault-rule-param';
 
-describe('Vault security check: vault password character categories', () => {
-    const vault = getBaseVault();
+describe('Vault security check: vault password character categories', async () => {
+    const vault = await getBaseVault();
     const rulebook = new Rulebook<vaultRuleParameters>();
     let rule: Rule<vaultRuleParameters>;
 

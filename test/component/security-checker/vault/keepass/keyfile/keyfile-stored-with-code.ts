@@ -7,8 +7,8 @@ import file from '../../../../../../src/util/file-with-code';
 import { getBaseVault } from '../../../../support/base-vault';
 import { vaultRuleParams } from '../../../../support/vault-rule-param';
 
-describe('Vault security check: keyfile stored with code', () => {
-    const vault = getBaseVault();
+describe('Vault security check: keyfile stored with code', async () => {
+    const vault = await getBaseVault();
     const rulebook = new Rulebook<vaultRuleParameters>();
     let rule: Rule<vaultRuleParameters>;
 
