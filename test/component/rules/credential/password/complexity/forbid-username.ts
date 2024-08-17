@@ -2,15 +2,15 @@ import { expect } from 'chai';
 import Rulebook, { Rule } from 'rulebound';
 import * as sinon from 'sinon';
 import { SecretValue } from '../../../../../../src';
-import { credentialRuleParameters } from '../../../../../../src/security-checker';
-import { credentialPasswordComplexityForbidUsername } from '../../../../../../src/security-checker/credential/password/complexity/forbid-username';
+import { credentialPasswordComplexityForbidUsername } from '../../../../../../src/rules/credential/password/complexity/forbid-username';
+import { CredentialRuleParameters } from '../../../../../../src/vault/enforcable';
 import { getBaseVault } from '../../../../support/base-vault';
 import { credentialRuleParam } from '../../../../support/credential-rule-param';
 
 describe('Credential security check: credential password forbid username', async () => {
     const vault = await getBaseVault();
-    const rulebook = new Rulebook<credentialRuleParameters>();
-    let rule: Rule<credentialRuleParameters>;
+    const rulebook = new Rulebook<CredentialRuleParameters>();
+    let rule: Rule<CredentialRuleParameters>;
 
     beforeEach(() => {
         rule = credentialPasswordComplexityForbidUsername();

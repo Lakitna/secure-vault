@@ -2,18 +2,18 @@ import { expect } from 'chai';
 import Rulebook, { Rule } from 'rulebound';
 import * as sinon from 'sinon';
 import { SecretValue } from '../../../../../../src';
-import { vaultRuleParameters } from '../../../../../../src/security-checker';
-import { vaultPasswordComplexityCharacterForbidReuse } from '../../../../../../src/security-checker/vault/password/complexity/forbid-reuse';
+import { VaultRuleParameters } from '../../../../../../src/vault/enforcable';
+import { fileVaultPasswordComplexityCharacterForbidVaultPath } from '../../../../../../src/vault/file/rules/vault/password/forbid-vault-path';
 import { getBaseVault } from '../../../../support/base-vault';
 import { vaultRuleParams } from '../../../../support/vault-rule-param';
 
-describe('Vault security check: vault password forbid reuse', async () => {
+describe('Vault security check: vault password forbid vault path', async () => {
     const vault = await getBaseVault();
-    const rulebook = new Rulebook<vaultRuleParameters>();
-    let rule: Rule<vaultRuleParameters>;
+    const rulebook = new Rulebook<VaultRuleParameters>();
+    let rule: Rule<VaultRuleParameters>;
 
     beforeEach(() => {
-        rule = vaultPasswordComplexityCharacterForbidReuse();
+        rule = fileVaultPasswordComplexityCharacterForbidVaultPath();
         rulebook.add(rule);
     });
 
@@ -23,7 +23,7 @@ describe('Vault security check: vault password forbid reuse', async () => {
 
     after(async () => {
         const params = await vaultRuleParams(vault);
-        params.config.vaultRestrictions.passwordComplexity.forbidReuse = false;
+        params.config.vaultRestrictions.passwordComplexity.forbidVaultPath = false;
     });
 
     it('has a description', async () => {
@@ -34,15 +34,15 @@ describe('Vault security check: vault password forbid reuse', async () => {
         expect(rule.description?.length).to.be.above(0);
     });
 
-    it('throws when the password is also used by a credential', async () => {
+    it('throws when the vault path contains the password', async () => {
         const params = await vaultRuleParams(vault);
 
-        params.config.vaultRestrictions.passwordComplexity.forbidReuse = true;
-        // The vault contains a credential with password 'lorum-ipsum'
+        params.config.vaultRestrictions.passwordComplexity.forbidVaultPath = true;
         params.vaultCredential.password = new SecretValue('string', 'lorum-ipsum');
+        params.vaultCredential.vaultPath = '/some/file/path/lorum/ipsum.kdbx';
 
         await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
-            `Vault password is also used by 1 credential(s)`
+            `Vault password contains (part of) the vault file path`
         );
     });
 
@@ -55,18 +55,28 @@ describe('Vault security check: vault password forbid reuse', async () => {
         const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
 
         const params = await vaultRuleParams(vault);
-
-        params.config.vaultRestrictions.passwordComplexity.forbidReuse = false;
+        params.config.vaultRestrictions.passwordComplexity.forbidVaultPath = false;
         params.vaultCredential.password = new SecretValue('string', 'lorum-ipsum');
+        params.vaultCredential.vaultPath = '/some/file/path/lorum/ipsum.kdbx';
 
         await rulebook.enforce(rule.name, params);
 
         expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
-            'Rule disabled: Disabled by security config `forbidReuse`'
+            'Rule disabled: Disabled by security config `forbidVaultPath`'
         );
     });
 
-    it('disables when the vault has no password', async () => {
+    it('does not throw when the password is different from the vault path', async () => {
+        const params = await vaultRuleParams(vault);
+
+        params.config.vaultRestrictions.passwordComplexity.forbidVaultPath = true;
+        params.vaultCredential.password = new SecretValue('string', 'lorum-ipsum');
+        params.vaultCredential.vaultPath = '/some/file/path/vault.kdbx';
+
+        await rulebook.enforce(rule.name, params);
+    });
+
+    it('disables when there is no password', async () => {
         rule.on('enforce', () => {
             throw new Error('Should not be enforced');
         });
@@ -75,24 +85,14 @@ describe('Vault security check: vault password forbid reuse', async () => {
         const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
 
         const params = await vaultRuleParams(vault);
-
-        params.config.vaultRestrictions.passwordComplexity.forbidReuse = true;
+        params.config.vaultRestrictions.passwordComplexity.forbidVaultPath = true;
         params.vaultCredential.password = new SecretValue('string', '');
+        params.vaultCredential.vaultPath = '/some/file/path/vault.kdbx';
 
         await rulebook.enforce(rule.name, params);
 
         expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
-            'Rule disabled: No vault password'
+            'Rule disabled: No vault password, nothing to check'
         );
-    });
-
-    it('does not throw when the password is unique', async () => {
-        const params = await vaultRuleParams(vault);
-
-        params.config.vaultRestrictions.passwordComplexity.forbidReuse = true;
-        // The vault contains a credential with password 'lorum-ipsum'
-        params.vaultCredential.password = new SecretValue('string', 'orum-ipsum');
-
-        await rulebook.enforce(rule.name, params);
     });
 });

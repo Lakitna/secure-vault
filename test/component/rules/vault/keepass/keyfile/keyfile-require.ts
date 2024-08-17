@@ -1,15 +1,15 @@
 import { expect } from 'chai';
 import Rulebook, { Rule } from 'rulebound';
 import * as sinon from 'sinon';
-import { vaultRuleParameters } from '../../../../../../src/security-checker';
-import { keepassVaultKeyfileRequire } from '../../../../../../src/security-checker/vault/keepass/keyfile/keyfile-require';
+import { VaultRuleParameters } from '../../../../../../src/vault/enforcable';
+import { keepassVaultKeyfileRequire } from '../../../../../../src/vault/keepass/rules/vault/keyfile/keyfile-require';
 import { getBaseVault } from '../../../../support/base-vault';
 import { vaultRuleParams } from '../../../../support/vault-rule-param';
 
 describe('Vault security check: require keyfile', async () => {
     const vault = await getBaseVault();
-    const rulebook = new Rulebook<vaultRuleParameters>();
-    let rule: Rule<vaultRuleParameters>;
+    const rulebook = new Rulebook<VaultRuleParameters>();
+    let rule: Rule<VaultRuleParameters>;
 
     beforeEach(() => {
         rule = keepassVaultKeyfileRequire();

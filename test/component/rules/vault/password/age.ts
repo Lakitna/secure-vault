@@ -1,10 +1,8 @@
 import { expect } from 'chai';
-import { Kdbx } from 'kdbxweb';
 import Rulebook, { Rule } from 'rulebound';
 import * as sinon from 'sinon';
-import { vaultRuleParameters } from '../../../../../src/security-checker';
-import { vaultPasswordAge } from '../../../../../src/security-checker/vault/password/age';
-import { vaultRuleParametersKeepass } from '../../../../../src/vault/keepass/keepass-vault';
+import { vaultPasswordAge } from '../../../../../src/rules/vault/password/age';
+import { VaultRuleParameters } from '../../../../../src/vault/enforcable';
 import { getBaseVault } from '../../../support/base-vault';
 import { vaultRuleParams } from '../../../support/vault-rule-param';
 
@@ -12,8 +10,8 @@ const hourInMilliseconds = 3600000;
 
 describe('Vault security check: vault password age', async () => {
     const vault = await getBaseVault();
-    const rulebook = new Rulebook<vaultRuleParameters>();
-    let rule: Rule<vaultRuleParameters>;
+    const rulebook = new Rulebook<VaultRuleParameters>();
+    let rule: Rule<VaultRuleParameters>;
 
     beforeEach(() => {
         rule = vaultPasswordAge();
@@ -38,14 +36,12 @@ describe('Vault security check: vault password age', async () => {
     });
 
     it('throws when the credential password is too old', async () => {
-        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
-            vault: { vault: Kdbx };
-        };
+        const params = await vaultRuleParams(vault);
 
         params.config.vaultRestrictions.maxPasswordAge = 10;
-        params.vault.vault.meta.keyChanged = new Date(
-            new Date().getTime() - 15 * hourInMilliseconds
-        );
+        sinon
+            .stub(params.vault, 'getVaultPasswordLastChangeDate')
+            .resolves(new Date(new Date().getTime() - 15 * hourInMilliseconds));
 
         await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
             'Vault password is too old, change it'
@@ -53,14 +49,12 @@ describe('Vault security check: vault password age', async () => {
     });
 
     it('does not throw when the credential password not too old', async () => {
-        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
-            vault: { vault: Kdbx };
-        };
+        const params = await vaultRuleParams(vault);
 
         params.config.vaultRestrictions.maxPasswordAge = 10;
-        params.vault.vault.meta.keyChanged = new Date(
-            new Date().getTime() - 5 * hourInMilliseconds
-        );
+        sinon
+            .stub(params.vault, 'getVaultPasswordLastChangeDate')
+            .resolves(new Date(new Date().getTime() - 5 * hourInMilliseconds));
 
         await rulebook.enforce(rule.name, params);
     });
@@ -120,11 +114,9 @@ describe('Vault security check: vault password age', async () => {
     });
 
     it('throws when the password age cant be found', async () => {
-        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
-            vault: { vault: Kdbx };
-        };
+        const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.maxPasswordAge = 5;
-        params.vault.vault.meta.keyChanged = undefined;
+        sinon.stub(params.vault, 'getVaultPasswordLastChangeDate').resolves(null);
 
         await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
             'Could not find when the vault password was last changed. Assuming the worst.'

@@ -1,7 +1,7 @@
 import { Credential, KeepassVault, SecretValue } from '../../../src';
-import { credentialRuleParameters } from '../../../src/security-checker';
+import { CredentialRuleParameters } from '../../../src/vault/enforcable';
 
-export async function credentialRuleParam(vault: KeepassVault): Promise<credentialRuleParameters> {
+export async function credentialRuleParam(vault: KeepassVault): Promise<CredentialRuleParameters> {
     const credential: Credential = {
         id: 'test-cred-1',
         expired: false,

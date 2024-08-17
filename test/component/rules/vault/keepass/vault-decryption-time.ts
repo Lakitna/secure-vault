@@ -2,16 +2,16 @@ import { expect } from 'chai';
 import { Kdbx } from 'kdbxweb';
 import Rulebook, { Rule } from 'rulebound';
 import sinon from 'sinon';
-import { vaultRuleParameters } from '../../../../../src/security-checker';
-import { keepassVaultDecryptionTime } from '../../../../../src/security-checker/vault/keepass/vault-decryption-time';
-import { vaultRuleParametersKeepass } from '../../../../../src/vault/keepass/keepass-vault';
+import { VaultRuleParameters } from '../../../../../src/vault/enforcable';
+import { VaultRuleParametersKeepass } from '../../../../../src/vault/keepass/keepass-vault';
+import { keepassVaultDecryptionTime } from '../../../../../src/vault/keepass/rules/vault/vault-decryption-time';
 import { getBaseVault } from '../../../support/base-vault';
 import { vaultRuleParams } from '../../../support/vault-rule-param';
 
 describe('Vault security check: vault decryption time', async () => {
     const vault = await getBaseVault();
-    const rulebook = new Rulebook<vaultRuleParameters>();
-    let rule: Rule<vaultRuleParameters>;
+    const rulebook = new Rulebook<VaultRuleParameters>();
+    let rule: Rule<VaultRuleParameters>;
 
     beforeEach(() => {
         rule = keepassVaultDecryptionTime();
@@ -36,7 +36,7 @@ describe('Vault security check: vault decryption time', async () => {
     });
 
     it('throws when the decryption time is too short', async () => {
-        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
+        const params = (await vaultRuleParams(vault)) as VaultRuleParametersKeepass & {
             vault: { vault: Kdbx };
         };
 
@@ -49,7 +49,7 @@ describe('Vault security check: vault decryption time', async () => {
     });
 
     it('does not throw when the decryption time is the exact min lenght', async () => {
-        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
+        const params = (await vaultRuleParams(vault)) as VaultRuleParametersKeepass & {
             vault: { vault: Kdbx };
         };
 
@@ -60,7 +60,7 @@ describe('Vault security check: vault decryption time', async () => {
     });
 
     it('does not throw when the decryption time is longer than minimum', async () => {
-        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
+        const params = (await vaultRuleParams(vault)) as VaultRuleParametersKeepass & {
             vault: { vault: Kdbx };
         };
 
@@ -80,7 +80,7 @@ describe('Vault security check: vault decryption time', async () => {
         // @ts-expect-error Accessing a private var
         const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
 
-        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
+        const params = (await vaultRuleParams(vault)) as VaultRuleParametersKeepass & {
             vault: { vault: Kdbx };
         };
 

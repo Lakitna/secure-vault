@@ -2,15 +2,15 @@ import { expect } from 'chai';
 import Rulebook, { Rule } from 'rulebound';
 import * as sinon from 'sinon';
 import { SecretValue } from '../../../../../src';
-import { vaultRuleParameters } from '../../../../../src/security-checker';
-import { vaultPasswordLength } from '../../../../../src/security-checker/vault/password/length';
+import { vaultPasswordLength } from '../../../../../src/rules/vault/password/length';
+import { VaultRuleParameters } from '../../../../../src/vault/enforcable';
 import { getBaseVault } from '../../../support/base-vault';
 import { vaultRuleParams } from '../../../support/vault-rule-param';
 
 describe('Vault security check: vault password length', async () => {
     const vault = await getBaseVault();
-    const rulebook = new Rulebook<vaultRuleParameters>();
-    let rule: Rule<vaultRuleParameters>;
+    const rulebook = new Rulebook<VaultRuleParameters>();
+    let rule: Rule<VaultRuleParameters>;
 
     beforeEach(() => {
         rule = vaultPasswordLength();

@@ -3,16 +3,16 @@ import { Kdbx } from 'kdbxweb';
 import Rulebook, { Rule } from 'rulebound';
 import * as sinon from 'sinon';
 import { SecretValue } from '../../../../../../src';
-import { vaultRuleParameters } from '../../../../../../src/security-checker';
-import { keepassVaultPasswordComplexityCharacterForbidVaultName } from '../../../../../../src/security-checker/vault/keepass/password/forbid-vault-name';
-import { vaultRuleParametersKeepass } from '../../../../../../src/vault/keepass/keepass-vault';
+import { VaultRuleParameters } from '../../../../../../src/vault/enforcable';
+import { VaultRuleParametersKeepass } from '../../../../../../src/vault/keepass/keepass-vault';
+import { keepassVaultPasswordComplexityCharacterForbidVaultName } from '../../../../../../src/vault/keepass/rules/vault/password/forbid-vault-name';
 import { getBaseVault } from '../../../../support/base-vault';
 import { vaultRuleParams } from '../../../../support/vault-rule-param';
 
 describe('Vault security check: vault password forbid vault name', async () => {
     const vault = await getBaseVault();
-    const rulebook = new Rulebook<vaultRuleParameters>();
-    let rule: Rule<vaultRuleParameters>;
+    const rulebook = new Rulebook<VaultRuleParameters>();
+    let rule: Rule<VaultRuleParameters>;
 
     beforeEach(() => {
         rule = keepassVaultPasswordComplexityCharacterForbidVaultName();
@@ -37,7 +37,7 @@ describe('Vault security check: vault password forbid vault name', async () => {
     });
 
     it('throws when the vault name contains the password', async () => {
-        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
+        const params = (await vaultRuleParams(vault)) as VaultRuleParametersKeepass & {
             vault: { vault: Kdbx };
         };
 
@@ -58,7 +58,7 @@ describe('Vault security check: vault password forbid vault name', async () => {
         // @ts-expect-error Accessing a private var
         const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
 
-        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
+        const params = (await vaultRuleParams(vault)) as VaultRuleParametersKeepass & {
             vault: { vault: Kdbx };
         };
         params.config.vaultRestrictions.passwordComplexity.forbidVaultName = false;
@@ -73,7 +73,7 @@ describe('Vault security check: vault password forbid vault name', async () => {
     });
 
     it('does not throw when the password is different from the vault name', async () => {
-        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
+        const params = (await vaultRuleParams(vault)) as VaultRuleParametersKeepass & {
             vault: { vault: Kdbx };
         };
 
@@ -92,7 +92,7 @@ describe('Vault security check: vault password forbid vault name', async () => {
         // @ts-expect-error Accessing a private var
         const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
 
-        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
+        const params = (await vaultRuleParams(vault)) as VaultRuleParametersKeepass & {
             vault: { vault: Kdbx };
         };
         params.config.vaultRestrictions.passwordComplexity.forbidVaultName = true;
@@ -114,7 +114,7 @@ describe('Vault security check: vault password forbid vault name', async () => {
         // @ts-expect-error Accessing a private var
         const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
 
-        const params = (await vaultRuleParams(vault)) as vaultRuleParametersKeepass & {
+        const params = (await vaultRuleParams(vault)) as VaultRuleParametersKeepass & {
             vault: { vault: Kdbx };
         };
 

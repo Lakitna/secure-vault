@@ -1,7 +1,7 @@
 import { KeepassVault, SecretValue } from '../../../src';
-import { vaultRuleParameters } from '../../../src/security-checker';
+import { VaultRuleParameters } from '../../../src/vault/enforcable';
 
-export async function vaultRuleParams(vault: KeepassVault): Promise<vaultRuleParameters> {
+export async function vaultRuleParams(vault: KeepassVault): Promise<VaultRuleParameters> {
     return {
         config: vault.securityConfig,
         vault: vault,

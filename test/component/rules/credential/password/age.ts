@@ -1,15 +1,15 @@
 import { expect } from 'chai';
 import Rulebook, { Rule } from 'rulebound';
 import * as sinon from 'sinon';
-import { credentialRuleParameters } from '../../../../../src/security-checker';
-import { credentialPasswordAge } from '../../../../../src/security-checker/credential/password/age';
+import { credentialPasswordAge } from '../../../../../src/rules/credential/password/age';
+import { CredentialRuleParameters } from '../../../../../src/vault/enforcable';
 import { getBaseVault } from '../../../support/base-vault';
 import { credentialRuleParam } from '../../../support/credential-rule-param';
 
 describe('Credential security check: credential password age', async () => {
     const vault = await getBaseVault();
-    const rulebook = new Rulebook<credentialRuleParameters>();
-    let rule: Rule<credentialRuleParameters>;
+    const rulebook = new Rulebook<CredentialRuleParameters>();
+    let rule: Rule<CredentialRuleParameters>;
 
     beforeEach(() => {
         rule = credentialPasswordAge();

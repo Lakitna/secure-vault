@@ -69,6 +69,8 @@ export abstract class EnforcableVault extends BaseVault {
 
     /**
      * Returns when the vault password was last changed. Used to enforce vault rules.
+     *
+     * The rule will throw if `null` is returned
      */
     public abstract getVaultPasswordLastChangeDate(): Promise<Date | null>;
 

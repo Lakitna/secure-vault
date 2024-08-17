@@ -1,15 +1,15 @@
 import { expect } from 'chai';
 import Rulebook, { Rule } from 'rulebound';
 import * as sinon from 'sinon';
-import { credentialRuleParameters } from '../../../../src/security-checker';
-import { credentialRequireExpiration } from '../../../../src/security-checker/credential/credential-require-expiration';
+import { credentialRequireExpiration } from '../../../../src/rules/credential/credential-require-expiration';
+import { CredentialRuleParameters } from '../../../../src/vault/enforcable';
 import { getBaseVault } from '../../support/base-vault';
 import { credentialRuleParam } from '../../support/credential-rule-param';
 
 describe('Credential security check: credential require expiration', async () => {
     const vault = await getBaseVault();
-    const rulebook = new Rulebook<credentialRuleParameters>();
-    let rule: Rule<credentialRuleParameters>;
+    const rulebook = new Rulebook<CredentialRuleParameters>();
+    let rule: Rule<CredentialRuleParameters>;
 
     beforeEach(() => {
         rule = credentialRequireExpiration();

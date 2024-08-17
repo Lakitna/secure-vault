@@ -2,17 +2,17 @@ import { expect } from 'chai';
 import path from 'node:path';
 import Rulebook, { Rule } from 'rulebound';
 import sinon from 'sinon';
-import { vaultRuleParameters } from '../../../../../src/security-checker';
-import { keepassVaultStoredWithKeyfile } from '../../../../../src/security-checker/vault/keepass/vault-stored-with-keyfile';
 import git from '../../../../../src/util/git';
 import npm from '../../../../../src/util/npm';
+import { VaultRuleParameters } from '../../../../../src/vault/enforcable';
+import { keepassVaultStoredWithKeyfile } from '../../../../../src/vault/keepass/rules/vault/vault-stored-with-keyfile';
 import { getBaseVault } from '../../../support/base-vault';
 import { vaultRuleParams } from '../../../support/vault-rule-param';
 
 describe('Vault security check: vault stored with keyfile', async () => {
     const vault = await getBaseVault();
-    const rulebook = new Rulebook<vaultRuleParameters>();
-    let rule: Rule<vaultRuleParameters>;
+    const rulebook = new Rulebook<VaultRuleParameters>();
+    let rule: Rule<VaultRuleParameters>;
 
     beforeEach(() => {
         rule = keepassVaultStoredWithKeyfile();

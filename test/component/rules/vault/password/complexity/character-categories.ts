@@ -2,15 +2,15 @@ import { expect } from 'chai';
 import Rulebook, { Rule } from 'rulebound';
 import * as sinon from 'sinon';
 import { SecretValue } from '../../../../../../src';
-import { vaultRuleParameters } from '../../../../../../src/security-checker';
-import { vaultPasswordComplexityCharacterCategories } from '../../../../../../src/security-checker/vault/password/complexity/character-categories';
+import { vaultPasswordComplexityCharacterCategories } from '../../../../../../src/rules/vault/password/complexity/character-categories';
+import { VaultRuleParameters } from '../../../../../../src/vault/enforcable';
 import { getBaseVault } from '../../../../support/base-vault';
 import { vaultRuleParams } from '../../../../support/vault-rule-param';
 
 describe('Vault security check: vault password character categories', async () => {
     const vault = await getBaseVault();
-    const rulebook = new Rulebook<vaultRuleParameters>();
-    let rule: Rule<vaultRuleParameters>;
+    const rulebook = new Rulebook<VaultRuleParameters>();
+    let rule: Rule<VaultRuleParameters>;
 
     beforeEach(() => {
         rule = vaultPasswordComplexityCharacterCategories();

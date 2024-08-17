@@ -1,19 +1,19 @@
 import { expect } from 'chai';
 import Rulebook, { Rule } from 'rulebound';
 import sinon from 'sinon';
-import { vaultRuleParameters } from '../../../../../src/security-checker';
-import { keepassVaultStoredWithCode } from '../../../../../src/security-checker/vault/keepass/vault-stored-with-code';
 import file from '../../../../../src/util/file-with-code';
+import { VaultRuleParameters } from '../../../../../src/vault/enforcable';
+import { fileVaultStoredWithCode } from '../../../../../src/vault/file/rules/vault/vault-stored-with-code';
 import { getBaseVault } from '../../../support/base-vault';
 import { vaultRuleParams } from '../../../support/vault-rule-param';
 
 describe('Vault security check: vault stored with code', async () => {
     const vault = await getBaseVault();
-    const rulebook = new Rulebook<vaultRuleParameters>();
-    let rule: Rule<vaultRuleParameters>;
+    const rulebook = new Rulebook<VaultRuleParameters>();
+    let rule: Rule<VaultRuleParameters>;
 
     beforeEach(() => {
-        rule = keepassVaultStoredWithCode();
+        rule = fileVaultStoredWithCode();
         rulebook.add(rule);
     });
 

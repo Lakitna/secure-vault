@@ -2,15 +2,15 @@ import { expect } from 'chai';
 import Rulebook, { Rule } from 'rulebound';
 import * as sinon from 'sinon';
 import { SecretValue } from '../../../../../src';
-import { credentialRuleParameters } from '../../../../../src/security-checker';
-import { credentialPasswordLength } from '../../../../../src/security-checker/credential/password/length';
+import { credentialPasswordLength } from '../../../../../src/rules/credential/password/length';
+import { CredentialRuleParameters } from '../../../../../src/vault/enforcable';
 import { getBaseVault } from '../../../support/base-vault';
 import { credentialRuleParam } from '../../../support/credential-rule-param';
 
 describe('Credential security check: credential password length', async () => {
     const vault = await getBaseVault();
-    const rulebook = new Rulebook<credentialRuleParameters>();
-    let rule: Rule<credentialRuleParameters>;
+    const rulebook = new Rulebook<CredentialRuleParameters>();
+    let rule: Rule<CredentialRuleParameters>;
 
     beforeEach(() => {
         rule = credentialPasswordLength();
