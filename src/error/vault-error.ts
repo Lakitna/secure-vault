@@ -1,12 +1,12 @@
 import c from 'ansi-colors';
 import { RuleError } from 'rulebound';
-import { Vault } from '../vault/vault';
+import { EnforcableVault } from '../vault/enforcable';
 
 export class VaultRuleError extends Error {
     vault: string;
     rule: string;
 
-    constructor(vault: Vault, ruleError: RuleError) {
+    constructor(vault: EnforcableVault, ruleError: RuleError) {
         const description = ruleError.description ? '\n' + c.yellow(ruleError.description) : '';
         super(ruleError.message + description);
 

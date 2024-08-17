@@ -2,21 +2,21 @@ import argon2 from 'argon2';
 import camelcase from 'camelcase';
 import { readFile, writeFile } from 'fs/promises';
 import kdbxweb, { Kdbx, KdbxEntry } from 'kdbxweb';
-import { RulebookConfig } from 'rulebound';
-import { SecurityConfig, securityConfigPresetNames } from '../../config/security';
 import { BaseVaultCredential } from '../../config/vault-password-prompt';
 import { Credential, CredentialWithoutSecrets } from '../../credentials';
 import { ReadonlyError } from '../../error/readonly-error';
 import { SecretValue } from '../../secret-value';
-import { SecurityChecker, vaultRuleParameters } from '../../security-checker';
 import { resolveSymlink } from '../../util/resolve-symlink';
-import {
-    GetCredentialOptions,
-    UpdateCredentialInput,
-    Vault,
-    defaultGetCredentialOptions,
-} from '../vault';
+import { VaultRuleParameters, VaultRules } from '../enforcable';
+import { FileVault, FileVaultOptions } from '../file/file-vault';
+import { defaultGetCredentialOptions, GetCredentialOptions } from '../readable';
+import { UpdateCredentialInput } from '../writable';
 import { createCredentialWithoutSecrets, createKeepassCredential } from './keepass-credential';
+import { keepassVaultKeyfileRequire } from './rules/vault/keyfile/keyfile-require';
+import { keepassVaultKeyfileStoredWithCode } from './rules/vault/keyfile/keyfile-stored-with-code';
+import { keepassVaultPasswordComplexityCharacterForbidVaultName } from './rules/vault/password/forbid-vault-name';
+import { keepassVaultDecryptionTime } from './rules/vault/vault-decryption-time';
+import { keepassVaultStoredWithKeyfile } from './rules/vault/vault-stored-with-keyfile';
 
 /**
  * The KDBX4 vault format uses Argon2 for password hashing. Kdbxweb does not support this out of
@@ -38,48 +38,25 @@ kdbxweb.CryptoEngine.setArgon2Impl(
     }
 );
 
-interface KeepassVaultOptions {
-    securityConfig: securityConfigPresetNames | Partial<SecurityConfig>;
-
+interface KeepassVaultOptions extends FileVaultOptions {
     /**
      * Path to the keyfile used as a second authentication factor for the vault.
      */
     keyfilePath: string;
-
-    /**
-     * Open the vault in readonly mode. In this mode, you can't create, update, or delete
-     * credentials.
-     *
-     * @default true
-     */
-    readonly: boolean;
-
-    /**
-     * @default 'info'
-     */
-    logLevel: RulebookConfig['verboseness'];
 }
 
-export interface vaultRuleParametersKeepass extends vaultRuleParameters {
+export interface VaultRuleParametersKeepass extends VaultRuleParameters {
     vault: KeepassVault;
 }
 
-export class KeepassVault extends Vault {
-    public path: string;
+export class KeepassVault extends FileVault<Kdbx> {
     public keyfilePath?: KeepassVaultOptions['keyfilePath'];
-    public vault?: Kdbx;
     private openTries: number;
-    private securityChecker: SecurityChecker;
 
     constructor(keepassVaultPath: string, options: Partial<KeepassVaultOptions> = {}) {
-        super(options);
-        this.path = keepassVaultPath;
-        if (!this.id) {
-            this.id = this.path;
-        }
+        super(keepassVaultPath, options);
         this.keyfilePath = options.keyfilePath;
         this.openTries = 0;
-        this.securityChecker = new SecurityChecker();
     }
 
     public async open(): Promise<Kdbx> {
@@ -105,15 +82,24 @@ export class KeepassVault extends Vault {
         const keyfile = await this.openKeyfile(vaultCredential.multifactor);
         this.vault = await this.openVault(vaultCredential, keyfile);
 
-        await this.securityChecker.checkVaultSecurity(
-            this.logLevel,
-            this.securityConfig,
-            this,
-            vaultCredential
-        );
+        await this.enforceVaultRules({
+            config: this.securityConfig,
+            vault: this,
+            vaultCredential: vaultCredential,
+        });
 
         this.openTries = 0;
         return this.vault;
+    }
+
+    public extendVaultRules(rules: VaultRules) {
+        const keepassRules = rules as VaultRules<VaultRuleParametersKeepass>;
+        keepassRules.vault.add(keepassVaultKeyfileRequire);
+        keepassRules.vault.add(keepassVaultKeyfileStoredWithCode);
+        keepassRules.vault.add(keepassVaultPasswordComplexityCharacterForbidVaultName);
+        keepassRules.vault.add(keepassVaultDecryptionTime);
+        keepassRules.vault.add(keepassVaultStoredWithKeyfile);
+        return super.extendVaultRules(keepassRules);
     }
 
     public async listCredentials(group?: string): Promise<CredentialWithoutSecrets[]> {
@@ -159,7 +145,11 @@ export class KeepassVault extends Vault {
 
         const cred = createKeepassCredential(entry);
         if (opts.secure !== false) {
-            await this.securityChecker.checkCredentialSecurity(this.securityConfig, cred, this);
+            await this.enforceCredentialRules({
+                config: this.securityConfig,
+                vault: this,
+                credential: cred,
+            });
         }
         return cred;
     }
@@ -180,7 +170,11 @@ export class KeepassVault extends Vault {
 
         const cred = createKeepassCredential(entry);
         if (opts.secure !== false) {
-            await this.securityChecker.checkCredentialSecurity(this.securityConfig, cred, this);
+            await this.enforceCredentialRules({
+                config: this.securityConfig,
+                vault: this,
+                credential: cred,
+            });
         }
         return cred;
     }
