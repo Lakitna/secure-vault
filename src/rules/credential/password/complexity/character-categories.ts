@@ -2,8 +2,8 @@ import { Rule } from 'rulebound';
 import {
     characterCategories,
     countCharacterCategories,
-} from '../../../../util/count-character-categories';
-import { CredentialRuleParameters } from '../../../../vault/enforcable';
+} from '../../../../util/count-character-categories.ts';
+import { CredentialRuleParameters } from '../../../../vault/enforcable.ts';
 
 export function credentialPasswordComplexityCharacterCategories() {
     return new Rule<CredentialRuleParameters>(

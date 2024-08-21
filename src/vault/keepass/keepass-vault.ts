@@ -2,21 +2,21 @@ import argon2 from 'argon2';
 import camelcase from 'camelcase';
 import { readFile, writeFile } from 'fs/promises';
 import kdbxweb, { Kdbx, KdbxEntry } from 'kdbxweb';
-import { BaseVaultCredential } from '../../config/vault-password-prompt';
-import { Credential, CredentialWithoutSecrets } from '../../credentials';
-import { ReadonlyError } from '../../error/readonly-error';
-import { SecretValue } from '../../secret-value';
-import { resolveSymlink } from '../../util/resolve-symlink';
-import { VaultRuleParameters, VaultRules } from '../enforcable';
-import { FileVault, FileVaultOptions } from '../file/file-vault';
-import { defaultGetCredentialOptions, GetCredentialOptions } from '../readable';
-import { UpdateCredentialInput } from '../writable';
-import { createCredentialWithoutSecrets, createKeepassCredential } from './keepass-credential';
-import { keepassVaultKeyfileRequire } from './rules/vault/keyfile/keyfile-require';
-import { keepassVaultKeyfileStoredWithCode } from './rules/vault/keyfile/keyfile-stored-with-code';
-import { keepassVaultPasswordComplexityCharacterForbidVaultName } from './rules/vault/password/forbid-vault-name';
-import { keepassVaultDecryptionTime } from './rules/vault/vault-decryption-time';
-import { keepassVaultStoredWithKeyfile } from './rules/vault/vault-stored-with-keyfile';
+import { BaseVaultCredential } from '../../config/vault-password-prompt.ts';
+import { Credential, CredentialWithoutSecrets } from '../../credentials.ts';
+import { ReadonlyError } from '../../error/readonly-error.ts';
+import { SecretValue } from '../../secret-value.ts';
+import { resolveSymlink } from '../../util/resolve-symlink.ts';
+import { VaultRuleParameters, VaultRules } from '../enforcable.ts';
+import { FileVault, FileVaultOptions } from '../file/file-vault.ts';
+import { defaultGetCredentialOptions, GetCredentialOptions } from '../readable.ts';
+import { UpdateCredentialInput } from '../writable.ts';
+import { createCredentialWithoutSecrets, createKeepassCredential } from './keepass-credential.ts';
+import { keepassVaultKeyfileRequire } from './rules/vault/keyfile/keyfile-require.ts';
+import { keepassVaultKeyfileStoredWithCode } from './rules/vault/keyfile/keyfile-stored-with-code.ts';
+import { keepassVaultPasswordComplexityCharacterForbidVaultName } from './rules/vault/password/forbid-vault-name.ts';
+import { keepassVaultDecryptionTime } from './rules/vault/vault-decryption-time.ts';
+import { keepassVaultStoredWithKeyfile } from './rules/vault/vault-stored-with-keyfile.ts';
 
 /**
  * The KDBX4 vault format uses Argon2 for password hashing. Kdbxweb does not support this out of

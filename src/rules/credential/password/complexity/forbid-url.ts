@@ -1,7 +1,7 @@
 import { Rule } from 'rulebound';
 import { URL } from 'url';
-import { detectPartialStringMatch } from '../../../../util/partial-string-match';
-import { CredentialRuleParameters } from '../../../../vault/enforcable';
+import { detectPartialStringMatch } from '../../../../util/partial-string-match.ts';
+import { CredentialRuleParameters } from '../../../../vault/enforcable.ts';
 
 export function credentialPasswordComplexityForbidUrl() {
     return new Rule<CredentialRuleParameters>('credential/password/complexity/forbid-url')

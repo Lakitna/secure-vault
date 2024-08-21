@@ -1,7 +1,7 @@
 import { Rule } from 'rulebound';
-import file from '../../../../util/file-with-code';
-import { resolveSymlink } from '../../../../util/resolve-symlink';
-import type { VaultRuleParameters } from '../../../enforcable';
+import file from '../../../../util/file-with-code.ts';
+import { resolveSymlink } from '../../../../util/resolve-symlink.ts';
+import type { VaultRuleParameters } from '../../../enforcable.ts';
 
 export function fileVaultStoredWithCode() {
     return new Rule<VaultRuleParameters>('file-vault/stored-with-code')

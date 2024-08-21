@@ -1,6 +1,6 @@
 import { dirname } from 'path';
-import git from './git';
-import npm from './npm';
+import git from './git.ts';
+import npm from './npm.ts';
 
 /**
  * Returns true if the file is tracked by git.

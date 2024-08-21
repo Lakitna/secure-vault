@@ -1,8 +1,8 @@
 import c from 'ansi-colors';
 import prompts from 'prompts';
-import { VaultPasswordPromptConfig } from '../config/security';
-import { BaseVaultCredential, userPasswordPrompt } from '../config/vault-password-prompt';
-import { SecretValue } from '../secret-value';
+import { VaultPasswordPromptConfig } from '../config/security.ts';
+import { BaseVaultCredential, userPasswordPrompt } from '../config/vault-password-prompt.ts';
+import { SecretValue } from '../secret-value.ts';
 
 export const promptCli: userPasswordPrompt = async function (
     keepassVaultPath: string,

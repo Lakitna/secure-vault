@@ -1,5 +1,5 @@
 import { Rule } from 'rulebound';
-import type { VaultRuleParametersKeepass } from '../../keepass-vault';
+import type { VaultRuleParametersKeepass } from '../../keepass-vault.ts';
 
 export function keepassVaultDecryptionTime() {
     return new Rule<VaultRuleParametersKeepass>('keepass/decryption-time')

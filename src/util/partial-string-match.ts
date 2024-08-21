@@ -1,6 +1,6 @@
 import Fuse, { FuseResult } from 'fuse.js';
 import memoize from 'micro-memoize';
-import { SecretValue } from '../secret-value';
+import { SecretValue } from '../secret-value.ts';
 
 /**
  * Detect partial string matches.

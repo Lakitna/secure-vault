@@ -1,4 +1,4 @@
-import { SecretValue } from './secret-value';
+import { SecretValue } from './secret-value.ts';
 
 interface BaseCredential {
     /**

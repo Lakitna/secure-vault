@@ -1,19 +1,19 @@
-import { RecursivePartial } from '../util/recursive-partial';
+import { RecursivePartial } from '../util/recursive-partial.ts';
 import {
     SecurityCredentialRestriction,
     securityCredentialRestrictionPresetNames,
     securityCredentialRestrictionPresets,
-} from './security-credential-restriction';
+} from './security-credential-restriction.ts';
 import {
     SecurityVaultRestriction,
     securityVaultRestrictionPresetNames,
     securityVaultRestrictionPresets,
-} from './security-vault-restriction';
+} from './security-vault-restriction.ts';
 import {
     userPasswordPrompt,
     vaultPasswordPromptPresetNames,
     vaultPasswordPromptPresets,
-} from './vault-password-prompt';
+} from './vault-password-prompt.ts';
 
 export type securityConfigPresetNames = keyof typeof securityConfigPresets;
 

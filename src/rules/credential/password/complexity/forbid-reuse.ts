@@ -1,7 +1,7 @@
 import { Rule } from 'rulebound';
-import { Credential } from '../../../../credentials';
-import { CredentialRuleParameters } from '../../../../vault/enforcable';
-import type { ReadableVault } from '../../../../vault/readable';
+import { Credential } from '../../../../credentials.ts';
+import { CredentialRuleParameters } from '../../../../vault/enforcable.ts';
+import type { ReadableVault } from '../../../../vault/readable.ts';
 
 export function credentialPasswordComplexityForbidReuse() {
     return new Rule<CredentialRuleParameters>('credential/password/complexity/forbid-reuse')

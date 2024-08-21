@@ -1,5 +1,5 @@
-import { Credential, CredentialWithoutSecrets } from '../credentials';
-import { OpenableVault, OpenableVaultOptions } from './openable';
+import { Credential, CredentialWithoutSecrets } from '../credentials.ts';
+import { OpenableVault, OpenableVaultOptions } from './openable.ts';
 
 export type GetCredentialOptions = {
     /**

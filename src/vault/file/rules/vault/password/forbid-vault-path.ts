@@ -1,6 +1,6 @@
 import { Rule } from 'rulebound';
-import { detectPartialStringMatch } from '../../../../../util/partial-string-match';
-import type { VaultRuleParameters } from '../../../../enforcable';
+import { detectPartialStringMatch } from '../../../../../util/partial-string-match.ts';
+import type { VaultRuleParameters } from '../../../../enforcable.ts';
 
 export function fileVaultPasswordComplexityCharacterForbidVaultPath() {
     return new Rule<VaultRuleParameters>('file-vault/password/complexity/forbid-vault-path')

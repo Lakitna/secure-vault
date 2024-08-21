@@ -1,8 +1,8 @@
-import { promptCli } from '../prompt/cli';
-import { promptEnvironmentVariable } from '../prompt/env';
-import { promptPopup } from '../prompt/popup';
-import { SecretValue } from '../secret-value';
-import { VaultPasswordPromptConfig } from './security';
+import { promptCli } from '../prompt/cli.ts';
+import { promptEnvironmentVariable } from '../prompt/env.ts';
+import { promptPopup } from '../prompt/popup.ts';
+import { SecretValue } from '../secret-value.ts';
+import { VaultPasswordPromptConfig } from './security.ts';
 
 export type vaultPasswordPromptPresetNames = keyof typeof vaultPasswordPromptPresets;
 

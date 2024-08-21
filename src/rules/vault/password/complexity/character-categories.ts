@@ -2,8 +2,8 @@ import { Rule } from 'rulebound';
 import {
     characterCategories,
     countCharacterCategories,
-} from '../../../../util/count-character-categories';
-import { VaultRuleParameters } from '../../../../vault/enforcable';
+} from '../../../../util/count-character-categories.ts';
+import { VaultRuleParameters } from '../../../../vault/enforcable.ts';
 
 export function vaultPasswordComplexityCharacterCategories() {
     return new Rule<VaultRuleParameters>('vault/password/complexity/min-character-categories')

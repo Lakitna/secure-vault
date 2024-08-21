@@ -1,6 +1,6 @@
 import c from 'ansi-colors';
 import { RuleError } from 'rulebound';
-import { EnforcableVault } from '../vault/enforcable';
+import { EnforcableVault } from '../vault/enforcable.ts';
 
 export class VaultRuleError extends Error {
     vault: string;

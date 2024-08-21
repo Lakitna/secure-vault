@@ -1,5 +1,5 @@
 import { Rule } from 'rulebound';
-import { CredentialRuleParameters } from '../../vault/enforcable';
+import { CredentialRuleParameters } from '../../vault/enforcable.ts';
 
 export function credentialAllowExpired() {
     return new Rule<CredentialRuleParameters>('credential/expired')

@@ -1,7 +1,7 @@
 import { Rule } from 'rulebound';
-import file from '../../../../../util/file-with-code';
-import { resolveSymlink } from '../../../../../util/resolve-symlink';
-import type { VaultRuleParametersKeepass } from '../../../keepass-vault';
+import file from '../../../../../util/file-with-code.ts';
+import { resolveSymlink } from '../../../../../util/resolve-symlink.ts';
+import type { VaultRuleParametersKeepass } from '../../../keepass-vault.ts';
 
 export function keepassVaultKeyfileStoredWithCode() {
     return new Rule<VaultRuleParametersKeepass>('keepass/keyfile/stored-with-code')

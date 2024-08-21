@@ -2,9 +2,9 @@ import { spawn } from 'node:child_process';
 import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { VaultPasswordPromptConfig } from '../config/security';
-import { BaseVaultCredential, userPasswordPrompt } from '../config/vault-password-prompt';
-import { SecretValue } from '../secret-value';
+import { VaultPasswordPromptConfig } from '../config/security.ts';
+import { BaseVaultCredential, userPasswordPrompt } from '../config/vault-password-prompt.ts';
+import { SecretValue } from '../secret-value.ts';
 
 // TODO: The current approach is Windows only. See if we can support MacOS and Linux too.
 //       Low priority

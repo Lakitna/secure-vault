@@ -1,5 +1,5 @@
 import { Rule } from 'rulebound';
-import { VaultRuleParameters } from '../../../vault/enforcable';
+import { VaultRuleParameters } from '../../../vault/enforcable.ts';
 
 export function vaultPasswordAge() {
     return new Rule<VaultRuleParameters>('vault/password/age')

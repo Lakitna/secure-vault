@@ -1,6 +1,6 @@
 import c from 'ansi-colors';
 import { RuleError } from 'rulebound';
-import { Credential } from '../credentials';
+import { Credential } from '../credentials.ts';
 
 export class CredentialRuleError extends Error {
     credential: Pick<Credential, 'id' | 'path'>;

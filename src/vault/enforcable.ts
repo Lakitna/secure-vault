@@ -4,26 +4,26 @@ import {
     resolveSecurityConfig,
     SecurityConfig,
     securityConfigPresetNames,
-} from '../config/security';
-import { BaseVaultCredential } from '../config/vault-password-prompt';
-import { Credential } from '../credentials';
-import { CredentialRuleError } from '../error/credential-error';
-import { VaultRuleError } from '../error/vault-error';
-import { credentialAllowExpired } from '../rules/credential/credential-allow-expired';
-import { credentialRequireExpiration } from '../rules/credential/credential-require-expiration';
-import { credentialPasswordAge } from '../rules/credential/password/age';
-import { credentialPasswordComplexityCharacterCategories } from '../rules/credential/password/complexity/character-categories';
-import { credentialPasswordComplexityForbidReuse } from '../rules/credential/password/complexity/forbid-reuse';
-import { credentialPasswordComplexityForbidUrl } from '../rules/credential/password/complexity/forbid-url';
-import { credentialPasswordComplexityForbidUsername } from '../rules/credential/password/complexity/forbid-username';
-import { credentialPasswordLength } from '../rules/credential/password/length';
-import { vaultPasswordAge } from '../rules/vault/password/age';
-import { vaultPasswordComplexityCharacterCategories } from '../rules/vault/password/complexity/character-categories';
-import { vaultPasswordComplexityCharacterForbidReuse } from '../rules/vault/password/complexity/forbid-reuse';
-import { vaultPasswordLength } from '../rules/vault/password/length';
-import { SecretValue } from '../secret-value';
-import type { ReadableVault } from './readable';
-import { BaseVault, BaseVaultOptions } from './vault';
+} from '../config/security.ts';
+import { BaseVaultCredential } from '../config/vault-password-prompt.ts';
+import { Credential } from '../credentials.ts';
+import { CredentialRuleError } from '../error/credential-error.ts';
+import { VaultRuleError } from '../error/vault-error.ts';
+import { credentialAllowExpired } from '../rules/credential/credential-allow-expired.ts';
+import { credentialRequireExpiration } from '../rules/credential/credential-require-expiration.ts';
+import { credentialPasswordAge } from '../rules/credential/password/age.ts';
+import { credentialPasswordComplexityCharacterCategories } from '../rules/credential/password/complexity/character-categories.ts';
+import { credentialPasswordComplexityForbidReuse } from '../rules/credential/password/complexity/forbid-reuse.ts';
+import { credentialPasswordComplexityForbidUrl } from '../rules/credential/password/complexity/forbid-url.ts';
+import { credentialPasswordComplexityForbidUsername } from '../rules/credential/password/complexity/forbid-username.ts';
+import { credentialPasswordLength } from '../rules/credential/password/length.ts';
+import { vaultPasswordAge } from '../rules/vault/password/age.ts';
+import { vaultPasswordComplexityCharacterCategories } from '../rules/vault/password/complexity/character-categories.ts';
+import { vaultPasswordComplexityCharacterForbidReuse } from '../rules/vault/password/complexity/forbid-reuse.ts';
+import { vaultPasswordLength } from '../rules/vault/password/length.ts';
+import { SecretValue } from '../secret-value.ts';
+import type { ReadableVault } from './readable.ts';
+import { BaseVault, BaseVaultOptions } from './vault.ts';
 
 export interface VaultRules<VP = VaultRuleParameters> {
     vault: Rulebook<VP>;

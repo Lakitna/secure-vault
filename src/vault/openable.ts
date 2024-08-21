@@ -1,11 +1,11 @@
-import { BaseVaultCredential } from '../config/vault-password-prompt';
-import { SecretValue } from '../secret-value';
+import { BaseVaultCredential } from '../config/vault-password-prompt.ts';
+import { SecretValue } from '../secret-value.ts';
 import {
     forgetRememberedPassword,
     getRememberedPassword,
     rememberPassword,
-} from '../util/remember-password';
-import { EnforcableVault, EnforcableVaultOptions } from './enforcable';
+} from '../util/remember-password.ts';
+import { EnforcableVault, EnforcableVaultOptions } from './enforcable.ts';
 
 export interface VaultConnectionDetails {
     vaultPath: string;

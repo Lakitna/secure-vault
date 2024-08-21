@@ -1,6 +1,6 @@
-import { Credential, CredentialData } from '../credentials';
-import { SecretValue } from '../secret-value';
-import { ReadableVault, ReadableVaultOptions } from './readable';
+import { Credential, CredentialData } from '../credentials.ts';
+import { SecretValue } from '../secret-value.ts';
+import { ReadableVault, ReadableVaultOptions } from './readable.ts';
 
 export type UpdateCredentialInput = Partial<{
     data: Partial<CredentialData>;

@@ -1,5 +1,5 @@
 import { Rule } from 'rulebound';
-import type { VaultRuleParametersKeepass } from '../../../keepass-vault';
+import type { VaultRuleParametersKeepass } from '../../../keepass-vault.ts';
 
 export function keepassVaultKeyfileRequire() {
     return new Rule<VaultRuleParametersKeepass>('keepass/keyfile/require')

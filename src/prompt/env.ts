@@ -1,6 +1,6 @@
 import kdbx from 'kdbxweb';
-import { BaseVaultCredential, userPasswordPrompt } from '../config/vault-password-prompt';
-import { SecretValue } from '../secret-value';
+import { BaseVaultCredential, userPasswordPrompt } from '../config/vault-password-prompt.ts';
+import { SecretValue } from '../secret-value.ts';
 
 export const promptEnvironmentVariable: userPasswordPrompt = async function (
     keepassVaultPath: string,

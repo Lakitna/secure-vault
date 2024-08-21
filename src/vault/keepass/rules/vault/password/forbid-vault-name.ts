@@ -1,6 +1,6 @@
 import { Rule } from 'rulebound';
-import { detectPartialStringMatch } from '../../../../../util/partial-string-match';
-import type { VaultRuleParametersKeepass } from '../../../keepass-vault';
+import { detectPartialStringMatch } from '../../../../../util/partial-string-match.ts';
+import type { VaultRuleParametersKeepass } from '../../../keepass-vault.ts';
 
 export function keepassVaultPasswordComplexityCharacterForbidVaultName() {
     return new Rule<VaultRuleParametersKeepass>('keepass/password/complexity/forbid-vault-name')

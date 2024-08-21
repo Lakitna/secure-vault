@@ -1,7 +1,7 @@
-import { VaultRules } from '../enforcable';
-import { WritableVault, WritableVaultOptions } from '../writable';
-import { fileVaultPasswordComplexityCharacterForbidVaultPath } from './rules/vault/password/forbid-vault-path';
-import { fileVaultStoredWithCode } from './rules/vault/vault-stored-with-code';
+import { VaultRules } from '../enforcable.ts';
+import { WritableVault, WritableVaultOptions } from '../writable.ts';
+import { fileVaultPasswordComplexityCharacterForbidVaultPath } from './rules/vault/password/forbid-vault-path.ts';
+import { fileVaultStoredWithCode } from './rules/vault/vault-stored-with-code.ts';
 
 export interface FileVaultOptions extends WritableVaultOptions {}
 

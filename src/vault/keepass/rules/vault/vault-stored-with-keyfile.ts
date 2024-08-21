@@ -1,9 +1,9 @@
 import { dirname } from 'path';
 import { Rule } from 'rulebound';
-import git from '../../../../util/git';
-import npm from '../../../../util/npm';
-import { resolveSymlink } from '../../../../util/resolve-symlink';
-import type { VaultRuleParametersKeepass } from '../../keepass-vault';
+import git from '../../../../util/git.ts';
+import npm from '../../../../util/npm.ts';
+import { resolveSymlink } from '../../../../util/resolve-symlink.ts';
+import type { VaultRuleParametersKeepass } from '../../keepass-vault.ts';
 
 export function keepassVaultStoredWithKeyfile() {
     return new Rule<VaultRuleParametersKeepass>('keepass/stored-with-keyfile')
