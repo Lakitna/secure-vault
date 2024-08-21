@@ -1,5 +1,5 @@
 import Fuse, { FuseResult } from 'fuse.js';
-import memoize from 'micro-memoize';
+import memoize from 'lodash.memoize';
 import { SecretValue } from '../secret-value.ts';
 
 /**
@@ -34,7 +34,7 @@ export function detectPartialStringMatch(
     const aSubstrings = makePossibleSubstringsMemoized(a, minSubstringLength, substringLengthStep);
     const bSubstrings = makePossibleSubstringsMemoized(b, minSubstringLength, substringLengthStep);
 
-    const matcher = new Fuse(aSubstrings, {
+    const matcher = new Fuse<string>(aSubstrings, {
         includeScore: true,
         isCaseSensitive: false,
         threshold: matchThreshold,
@@ -80,6 +80,4 @@ function makePossibleSubstrings(
     substrings.push(exposedString);
     return substrings.reverse();
 }
-const makePossibleSubstringsMemoized = memoize(makePossibleSubstrings, {
-    maxSize: 3,
-});
+const makePossibleSubstringsMemoized = memoize(makePossibleSubstrings);
