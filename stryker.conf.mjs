@@ -4,12 +4,10 @@ const config = {
     reporters: ['html', 'progress'],
     checkers: ['typescript'],
     tsconfigFile: 'tsconfig.json',
-    testRunnerNodeArgs: [
-        '--loader=ts-node/esm',
-        '--loader=esmock',
-        '--experimental-specifier-resolution=node',
-    ],
-    testRunner: 'mocha',
+    testRunner: "vitest",
+    vitest: {
+        configFile: "vitest.config.js",
+    },
     coverageAnalysis: 'perTest',
     ignoreStatic: true,
     // Increase because we also run component tests with Stryker.
