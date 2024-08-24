@@ -1,10 +1,13 @@
-import { expect } from 'chai';
 import kdbxweb from 'kdbxweb';
 import util from 'node:util';
-import sinon from 'sinon';
-import { SecretValue } from '../../src/index';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { SecretValue } from '../../src/secret-value.ts';
 
 describe('Secret value', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     it('stores a string as protected value and retrieves it as plaintext', () => {
         const input = 'Lorum ipsum';
         const secret = new SecretValue('string', input);
@@ -86,101 +89,101 @@ describe('Secret value', () => {
             const a = new SecretValue('string', '123');
             const b = new SecretValue('binary', new Uint8Array([1, 2, 3]));
 
-            const aExposeSpy = sinon.spy(a, 'expose');
-            const bExposeSpy = sinon.spy(b, 'expose');
+            const aExposeSpy = vi.spyOn(a, 'expose');
+            const bExposeSpy = vi.spyOn(b, 'expose');
 
             const result = a.equals(b);
 
-            expect(result).to.be.false;
-            expect(aExposeSpy).to.have.not.been.called;
-            expect(bExposeSpy).to.have.not.been.called;
+            expect(result).toBe(false);
+            expect(aExposeSpy).toHaveBeenCalledTimes(0);
+            expect(bExposeSpy).toHaveBeenCalledTimes(0);
         });
 
-        context('Both type string', () => {
+        describe('Both type string', () => {
             it('does not expose secrets when different length', () => {
                 const a = new SecretValue<string>('string', '123');
                 const b = new SecretValue<string>('string', '12345');
 
-                const aExposeSpy = sinon.spy(a, 'expose');
-                const bExposeSpy = sinon.spy(b, 'expose');
+                const aExposeSpy = vi.spyOn(a, 'expose');
+                const bExposeSpy = vi.spyOn(b, 'expose');
 
                 const result = a.equals(b);
 
-                expect(result).to.be.false;
-                expect(aExposeSpy).to.have.not.been.called;
-                expect(bExposeSpy).to.have.not.been.called;
+                expect(result).toBe(false);
+                expect(aExposeSpy).toHaveBeenCalledTimes(0);
+                expect(bExposeSpy).toHaveBeenCalledTimes(0);
             });
 
             it('exposes secrets to compare different strings of same length', () => {
                 const a = new SecretValue<string>('string', '123');
                 const b = new SecretValue<string>('string', '124');
 
-                const aExposeSpy = sinon.spy(a, 'expose');
-                const bExposeSpy = sinon.spy(b, 'expose');
+                const aExposeSpy = vi.spyOn(a, 'expose');
+                const bExposeSpy = vi.spyOn(b, 'expose');
 
                 const result = a.equals(b);
 
-                expect(result).to.be.false;
-                expect(aExposeSpy).to.have.been.calledOnceWithExactly();
-                expect(bExposeSpy).to.have.been.calledOnceWithExactly();
+                expect(result).toBe(false);
+                expect(aExposeSpy).toHaveBeenCalledWith();
+                expect(bExposeSpy).toHaveBeenCalledWith();
             });
 
             it('exposes secrets to compare equal strings', () => {
                 const a = new SecretValue<string>('string', '123');
                 const b = new SecretValue<string>('string', '123');
 
-                const aExposeSpy = sinon.spy(a, 'expose');
-                const bExposeSpy = sinon.spy(b, 'expose');
+                const aExposeSpy = vi.spyOn(a, 'expose');
+                const bExposeSpy = vi.spyOn(b, 'expose');
 
                 const result = a.equals(b);
 
-                expect(result).to.be.true;
-                expect(aExposeSpy).to.have.been.calledOnceWithExactly();
-                expect(bExposeSpy).to.have.been.calledOnceWithExactly();
+                expect(result).toBe(true);
+                expect(aExposeSpy).toHaveBeenCalledWith();
+                expect(bExposeSpy).toHaveBeenCalledWith();
             });
         });
 
-        context('Both type binary', () => {
+        describe('Both type binary', () => {
             it('does not expose secrets when different length', () => {
                 const a = new SecretValue<Uint8Array>('binary', new Uint8Array([1, 2, 3]));
                 const b = new SecretValue<Uint8Array>('binary', new Uint8Array([1, 2, 3, 4, 5]));
 
-                const aExposeSpy = sinon.spy(a, 'expose');
-                const bExposeSpy = sinon.spy(b, 'expose');
+                const aExposeSpy = vi.spyOn(a, 'expose');
+                const bExposeSpy = vi.spyOn(b, 'expose');
 
                 const result = a.equals(b);
 
-                expect(result).to.be.false;
-                expect(aExposeSpy).to.have.not.been.called;
-                expect(bExposeSpy).to.have.not.been.called;
+                expect(result).toBe(false);
+                expect(aExposeSpy).toHaveBeenCalledTimes(0);
+                expect(bExposeSpy).toHaveBeenCalledTimes(0);
             });
 
             it('exposes secrets to compare different binaries of same length', () => {
                 const a = new SecretValue<Uint8Array>('binary', new Uint8Array([1, 2, 3]));
                 const b = new SecretValue<Uint8Array>('binary', new Uint8Array([1, 2, 4]));
 
-                const aExposeSpy = sinon.spy(a, 'expose');
-                const bExposeSpy = sinon.spy(b, 'expose');
+                const aExposeSpy = vi.spyOn(a, 'expose');
+                const bExposeSpy = vi.spyOn(b, 'expose');
 
                 const result = a.equals(b);
 
-                expect(result).to.be.false;
-                expect(aExposeSpy).to.have.been.calledOnceWithExactly();
-                expect(bExposeSpy).to.have.been.calledOnceWithExactly();
+                expect(result).toBe(false);
+                expect(aExposeSpy).toHaveBeenCalledWith();
+                expect(bExposeSpy).toHaveBeenCalledWith();
             });
 
             it('exposes secrets to compare equal binaries', () => {
                 const a = new SecretValue<Uint8Array>('binary', new Uint8Array([1, 2, 3]));
                 const b = new SecretValue<Uint8Array>('binary', new Uint8Array([1, 2, 3]));
 
-                const aExposeSpy = sinon.spy(a, 'expose');
-                const bExposeSpy = sinon.spy(b, 'expose');
+                const aExposeSpy = vi.spyOn(a, 'expose');
+                const bExposeSpy = vi.spyOn(b, 'expose');
 
                 const result = a.equals(b);
 
-                expect(result).to.be.true;
-                expect(aExposeSpy).to.have.been.calledOnceWithExactly();
-                expect(bExposeSpy).to.have.been.calledOnceWithExactly();
+                expect(result).toBe(true);
+                expect(aExposeSpy).toHaveBeenCalledWith();
+                expect(bExposeSpy).toHaveBeenCalledWith();
             });
         });
     });

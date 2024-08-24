@@ -1,13 +1,12 @@
-import { expect } from 'chai';
 import { Kdbx } from 'kdbxweb';
 import Rulebook, { Rule } from 'rulebound';
-import * as sinon from 'sinon';
-import { SecretValue } from '../../../../../../src';
-import { VaultRuleParameters } from '../../../../../../src/vault/enforcable';
-import { VaultRuleParametersKeepass } from '../../../../../../src/vault/keepass/keepass-vault';
-import { keepassVaultPasswordComplexityCharacterForbidVaultName } from '../../../../../../src/vault/keepass/rules/vault/password/forbid-vault-name';
-import { getBaseVault } from '../../../../support/base-vault';
-import { vaultRuleParams } from '../../../../support/vault-rule-param';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { SecretValue } from '../../../../../../src/secret-value.ts';
+import { VaultRuleParameters } from '../../../../../../src/vault/enforcable.ts';
+import { VaultRuleParametersKeepass } from '../../../../../../src/vault/keepass/keepass-vault.ts';
+import { keepassVaultPasswordComplexityCharacterForbidVaultName } from '../../../../../../src/vault/keepass/rules/vault/password/forbid-vault-name.ts';
+import { getBaseVault } from '../../../../support/base-vault.ts';
+import { vaultRuleParams } from '../../../../support/vault-rule-param.ts';
 
 describe('Vault security check: vault password forbid vault name', async () => {
     const vault = await getBaseVault();
@@ -23,17 +22,17 @@ describe('Vault security check: vault password forbid vault name', async () => {
         rulebook.rules = [];
     });
 
-    after(async () => {
+    afterAll(async () => {
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.passwordComplexity.forbidVaultName = false;
     });
 
     it('has a description', async () => {
-        expect(rulebook.rules.length).to.equal(1);
+        expect(rulebook.rules.length).toEqual(1);
 
         const rule = rulebook.rules[0];
-        expect(rule.description).to.be.a('string');
-        expect(rule.description?.length).to.be.above(0);
+        expect(rule.description).toBeTypeOf('string');
+        expect(rule.description?.length).toBeGreaterThan(0);
     });
 
     it('throws when the vault name contains the password', async () => {
@@ -45,7 +44,7 @@ describe('Vault security check: vault password forbid vault name', async () => {
         params.vaultCredential.password = new SecretValue('string', 'lorsum');
         params.vault.vault.meta.name = 'lorum-ipsum';
 
-        await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
+        await expect(rulebook.enforce(rule.name, params)).rejects.toThrow(
             `Vault password contains (part of) the vault name`
         );
     });
@@ -56,7 +55,7 @@ describe('Vault security check: vault password forbid vault name', async () => {
         });
 
         // @ts-expect-error Accessing a private var
-        const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
+        const ruleLogDebugStub = vi.spyOn(rule._log, 'debug');
 
         const params = (await vaultRuleParams(vault)) as VaultRuleParametersKeepass & {
             vault: { vault: Kdbx };
@@ -67,7 +66,7 @@ describe('Vault security check: vault password forbid vault name', async () => {
 
         await rulebook.enforce(rule.name, params);
 
-        expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
+        expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: Disabled by security config `forbidVaultName`'
         );
     });
@@ -90,7 +89,7 @@ describe('Vault security check: vault password forbid vault name', async () => {
         });
 
         // @ts-expect-error Accessing a private var
-        const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
+        const ruleLogDebugStub = vi.spyOn(rule._log, 'debug');
 
         const params = (await vaultRuleParams(vault)) as VaultRuleParametersKeepass & {
             vault: { vault: Kdbx };
@@ -101,7 +100,7 @@ describe('Vault security check: vault password forbid vault name', async () => {
 
         await rulebook.enforce(rule.name, params);
 
-        expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
+        expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: No vault password, nothing to check'
         );
     });
@@ -112,7 +111,7 @@ describe('Vault security check: vault password forbid vault name', async () => {
         });
 
         // @ts-expect-error Accessing a private var
-        const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
+        const ruleLogDebugStub = vi.spyOn(rule._log, 'debug');
 
         const params = (await vaultRuleParams(vault)) as VaultRuleParametersKeepass & {
             vault: { vault: Kdbx };
@@ -124,7 +123,7 @@ describe('Vault security check: vault password forbid vault name', async () => {
 
         await rulebook.enforce(rule.name, params);
 
-        expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
+        expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: No vault name, nothing to check'
         );
     });

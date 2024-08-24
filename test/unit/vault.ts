@@ -1,9 +1,9 @@
-import { expect } from 'chai';
 import esmock from 'esmock';
 import sinon from 'sinon';
-import { SecretValue } from '../../src';
-import { BaseVaultCredential } from '../../src/config/vault-password-prompt';
-import { BaseVault, BaseVaultOptions } from '../../src/vault/vault';
+import { describe, expect, it, vi } from 'vitest';
+import { BaseVaultCredential } from '../../src/config/vault-password-prompt.ts';
+import { SecretValue } from '../../src/secret-value.ts';
+import { BaseVault, BaseVaultOptions } from '../../src/vault/vault.ts';
 
 describe('Abstract vault', () => {
     it('constructs with default config', () => {
@@ -41,7 +41,7 @@ describe('Abstract vault', () => {
         };
 
         it('prompts the user if password save is not allowed', async () => {
-            const forgetRememberedPasswordStub = sinon.stub();
+            const forgetRememberedPasswordStub = vi.fn.stub();
             const getRememberedPasswordStub = sinon.stub();
             const rememberPasswordStub = sinon.stub();
             const mockedModule = await esmock(

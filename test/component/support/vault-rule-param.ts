@@ -1,5 +1,5 @@
-import { KeepassVault, SecretValue } from '../../../src';
-import { VaultRuleParameters } from '../../../src/vault/enforcable';
+import { KeepassVault, SecretValue } from '../../../src/index.ts';
+import { VaultRuleParameters } from '../../../src/vault/enforcable.ts';
 
 export async function vaultRuleParams(vault: KeepassVault): Promise<VaultRuleParameters> {
     return {

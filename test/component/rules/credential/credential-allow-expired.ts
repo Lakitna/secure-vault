@@ -1,10 +1,9 @@
-import { expect } from 'chai';
 import Rulebook, { Rule } from 'rulebound';
-import * as sinon from 'sinon';
-import { credentialAllowExpired } from '../../../../src/rules/credential/credential-allow-expired';
-import { CredentialRuleParameters } from '../../../../src/vault/enforcable';
-import { getBaseVault } from '../../support/base-vault';
-import { credentialRuleParam } from '../../support/credential-rule-param';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { credentialAllowExpired } from '../../../../src/rules/credential/credential-allow-expired.ts';
+import { CredentialRuleParameters } from '../../../../src/vault/enforcable.ts';
+import { getBaseVault } from '../../support/base-vault.ts';
+import { credentialRuleParam } from '../../support/credential-rule-param.ts';
 
 describe('Credential security check: allow expired credential', async () => {
     const vault = await getBaseVault();
@@ -20,17 +19,17 @@ describe('Credential security check: allow expired credential', async () => {
         rulebook.rules = [];
     });
 
-    after(async () => {
+    afterAll(async () => {
         const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.allowExpired = true;
     });
 
     it('has a description', async () => {
-        expect(rulebook.rules.length).to.equal(1);
+        expect(rulebook.rules.length).toEqual(1);
 
         const rule = rulebook.rules[0];
-        expect(rule.description).to.be.a('string');
-        expect(rule.description?.length).to.be.above(0);
+        expect(rule.description).toBeTypeOf('string');
+        expect(rule.description?.length).toBeGreaterThan(0);
     });
 
     it('throws when the credential is expired', async () => {
@@ -39,7 +38,7 @@ describe('Credential security check: allow expired credential', async () => {
         params.config.credentialRestrictions.allowExpired = false;
         params.credential.expired = true;
 
-        await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith('Credential expired');
+        await expect(rulebook.enforce(rule.name, params)).rejects.toThrow('Credential expired');
     });
 
     it('does not throw if the credential is not expired', async () => {
@@ -57,7 +56,7 @@ describe('Credential security check: allow expired credential', async () => {
         });
 
         // @ts-expect-error Accessing a private var
-        const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
+        const ruleLogDebugStub = vi.spyOn(rule._log, 'debug');
 
         const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.allowExpired = true;
@@ -65,7 +64,7 @@ describe('Credential security check: allow expired credential', async () => {
 
         await rulebook.enforce(rule.name, params);
 
-        expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
+        expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: Disabled by security config `allowExpired`'
         );
     });

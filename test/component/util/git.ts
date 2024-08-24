@@ -1,17 +1,17 @@
-import { expect } from 'chai';
 import { exec } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { rimraf } from 'rimraf';
-import { getRoot, isIgnored } from '../../../src/util/git';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { getRoot, isIgnored } from '../../../src/util/git.ts';
 
 describe('Git repo utils', () => {
     const gitRoot = path
         .join(path.dirname(fileURLToPath(import.meta.url)), '../support/tmpGit')
         .replaceAll('\\', '/');
 
-    before(async () => {
+    beforeAll(async () => {
         await fs.mkdir(gitRoot);
         await new Promise<void>((resolve, reject) => {
             exec('git init', { cwd: gitRoot }, (error) => {
@@ -21,12 +21,12 @@ describe('Git repo utils', () => {
         });
     });
 
-    after(async () => {
+    afterAll(async () => {
         await rimraf(path.join(gitRoot));
     });
 
     describe('isIgnored', () => {
-        before(async () => {
+        beforeAll(async () => {
             await fs.writeFile(path.join(gitRoot, 'iAmIgnored.file'), '');
             await fs.writeFile(path.join(gitRoot, 'iAmNotIgnored.file'), '');
             await fs.writeFile(path.join(gitRoot, '.gitignore'), 'iAmIgnored.file');
@@ -35,13 +35,13 @@ describe('Git repo utils', () => {
         it('return true when ignored', async () => {
             const result = await isIgnored(path.join(gitRoot, 'iAmIgnored.file'));
 
-            expect(result).to.be.true;
+            expect(result).toEqual(true);
         });
 
         it('return false when not ignored', async () => {
             const result = await isIgnored(path.join(gitRoot, 'iAmNotIgnored.file'));
 
-            expect(result).to.be.false;
+            expect(result).toEqual(false);
         });
     });
 
@@ -49,7 +49,7 @@ describe('Git repo utils', () => {
         it('returns the root folder if given the root folder', async () => {
             const result = await getRoot(path.join(gitRoot));
 
-            expect(result).to.equal(gitRoot);
+            expect(result).toEqual(gitRoot);
         });
 
         it('returns the root folder if given a subfolder', async () => {
@@ -58,7 +58,7 @@ describe('Git repo utils', () => {
 
             const result = await getRoot(subfolderPath);
 
-            expect(result).to.equal(gitRoot);
+            expect(result).toEqual(gitRoot);
         });
 
         it('returns false if not in a git repository', async () => {
@@ -70,7 +70,7 @@ describe('Git repo utils', () => {
 
             const result = await getRoot(thisRepoParentDir);
 
-            expect(result).to.be.false;
+            expect(result).toEqual(false);
         });
     });
 });

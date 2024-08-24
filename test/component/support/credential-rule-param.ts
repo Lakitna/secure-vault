@@ -1,5 +1,5 @@
-import { Credential, KeepassVault, SecretValue } from '../../../src';
-import { CredentialRuleParameters } from '../../../src/vault/enforcable';
+import { Credential, KeepassVault, SecretValue } from '../../../src/index.ts';
+import { CredentialRuleParameters } from '../../../src/vault/enforcable.ts';
 
 export async function credentialRuleParam(vault: KeepassVault): Promise<CredentialRuleParameters> {
     const credential: Credential = {

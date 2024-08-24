@@ -1,5 +1,5 @@
-import { expect } from 'chai';
-import { countCharacterCategories } from '../../../src/util/count-character-categories';
+import { describe, expect, it } from 'vitest';
+import { countCharacterCategories } from '../../../src/util/count-character-categories.ts';
 
 const categories = [
     {

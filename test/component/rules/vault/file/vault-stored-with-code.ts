@@ -1,11 +1,10 @@
-import { expect } from 'chai';
 import Rulebook, { Rule } from 'rulebound';
-import sinon from 'sinon';
-import file from '../../../../../src/util/file-with-code';
-import { VaultRuleParameters } from '../../../../../src/vault/enforcable';
-import { fileVaultStoredWithCode } from '../../../../../src/vault/file/rules/vault/vault-stored-with-code';
-import { getBaseVault } from '../../../support/base-vault';
-import { vaultRuleParams } from '../../../support/vault-rule-param';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import file from '../../../../../src/util/file-with-code.ts';
+import { VaultRuleParameters } from '../../../../../src/vault/enforcable.ts';
+import { fileVaultStoredWithCode } from '../../../../../src/vault/file/rules/vault/vault-stored-with-code.ts';
+import { getBaseVault } from '../../../support/base-vault.ts';
+import { vaultRuleParams } from '../../../support/vault-rule-param.ts';
 
 describe('Vault security check: vault stored with code', async () => {
     const vault = await getBaseVault();
@@ -21,39 +20,39 @@ describe('Vault security check: vault stored with code', async () => {
         rulebook.rules = [];
     });
 
-    after(async () => {
+    afterAll(async () => {
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.allowVaultWithCode = true;
     });
 
     it('has a description', async () => {
-        expect(rulebook.rules.length).to.equal(1);
+        expect(rulebook.rules.length).toEqual(1);
 
         const rule = rulebook.rules[0];
-        expect(rule.description).to.be.a('string');
-        expect(rule.description?.length).to.be.above(0);
+        expect(rule.description).toBeTypeOf('string');
+        expect(rule.description?.length).toBeGreaterThan(0);
     });
 
     it('throws when the vault is stored with code', async () => {
         const params = await vaultRuleParams(vault);
 
         params.config.vaultRestrictions.allowVaultWithCode = false;
-        const stub = sinon.stub(file, 'fileWithCode').resolves(true);
+        const stub = vi.spyOn(file, 'fileWithCode').mockResolvedValue(true);
 
-        await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
+        await expect(rulebook.enforce(rule.name, params)).rejects.toThrow(
             'Vault is stored with source code'
         );
-        expect(stub).to.have.been.called;
+        expect(stub).toHaveBeenCalled();
     });
 
     it('does not throw when the vault is not stored with code', async () => {
         const params = await vaultRuleParams(vault);
 
         params.config.vaultRestrictions.allowVaultWithCode = false;
-        const stub = sinon.stub(file, 'fileWithCode').resolves(false);
+        const stub = vi.spyOn(file, 'fileWithCode').mockResolvedValue(false);
 
         await rulebook.enforce(rule.name, params);
-        expect(stub).to.have.been.called;
+        expect(stub).toHaveBeenCalled();
     });
 
     it('disables when storing with code is allowed', async () => {
@@ -62,16 +61,16 @@ describe('Vault security check: vault stored with code', async () => {
         });
 
         // @ts-expect-error Accessing a private var
-        const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
+        const ruleLogDebugStub = vi.spyOn(rule._log, 'debug');
 
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.allowVaultWithCode = true;
-        const stub = sinon.stub(file, 'fileWithCode').resolves(true);
+        const stub = vi.spyOn(file, 'fileWithCode').mockResolvedValue(true);
 
         await rulebook.enforce(rule.name, params);
 
-        expect(stub).to.not.have.been.called;
-        expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
+        expect(stub).toHaveBeenCalledTimes(0);
+        expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: Disabled by security config `allowVaultWithCode`'
         );
     });

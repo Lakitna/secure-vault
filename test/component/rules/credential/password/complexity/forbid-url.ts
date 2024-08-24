@@ -1,11 +1,10 @@
-import { expect } from 'chai';
 import Rulebook, { Rule } from 'rulebound';
-import * as sinon from 'sinon';
-import { SecretValue } from '../../../../../../src';
-import { credentialPasswordComplexityForbidUrl } from '../../../../../../src/rules/credential/password/complexity/forbid-url';
-import { CredentialRuleParameters } from '../../../../../../src/vault/enforcable';
-import { getBaseVault } from '../../../../support/base-vault';
-import { credentialRuleParam } from '../../../../support/credential-rule-param';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { credentialPasswordComplexityForbidUrl } from '../../../../../../src/rules/credential/password/complexity/forbid-url.ts';
+import { SecretValue } from '../../../../../../src/secret-value.ts';
+import { CredentialRuleParameters } from '../../../../../../src/vault/enforcable.ts';
+import { getBaseVault } from '../../../../support/base-vault.ts';
+import { credentialRuleParam } from '../../../../support/credential-rule-param.ts';
 
 describe('Credential security check: credential password forbid url', async () => {
     const vault = await getBaseVault();
@@ -21,17 +20,17 @@ describe('Credential security check: credential password forbid url', async () =
         rulebook.rules = [];
     });
 
-    after(async () => {
+    afterAll(async () => {
         const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.passwordComplexity.forbidUrl = false;
     });
 
     it('has a description', async () => {
-        expect(rulebook.rules.length).to.equal(1);
+        expect(rulebook.rules.length).toEqual(1);
 
         const rule = rulebook.rules[0];
-        expect(rule.description).to.be.a('string');
-        expect(rule.description?.length).to.be.above(0);
+        expect(rule.description).toBeTypeOf('string');
+        expect(rule.description?.length).toBeGreaterThan(0);
     });
 
     it('throws when the url contains the password', async () => {
@@ -41,7 +40,7 @@ describe('Credential security check: credential password forbid url', async () =
         params.credential.data.password = new SecretValue('string', 'lorum-ipsum');
         params.credential.data.url = 'https://lorum.ipsum.org';
 
-        await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
+        await expect(rulebook.enforce(rule.name, params)).rejects.toThrow(
             `Password contains (part of) URL domain`
         );
     });
@@ -53,7 +52,7 @@ describe('Credential security check: credential password forbid url', async () =
         params.credential.data.password = new SecretValue('string', '127.0.0');
         params.credential.data.url = 'https://127.0.0.1:8000';
 
-        await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
+        await expect(rulebook.enforce(rule.name, params)).rejects.toThrow(
             `Password contains (part of) URL domain`
         );
     });
@@ -64,14 +63,14 @@ describe('Credential security check: credential password forbid url', async () =
         });
 
         // @ts-expect-error Accessing a private var
-        const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
+        const ruleLogDebugStub = vi.spyOn(rule._log, 'debug');
 
         const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.passwordComplexity.forbidUrl = false;
 
         await rulebook.enforce(rule.name, params);
 
-        expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
+        expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: Disabled by security config `forbidUrl`'
         );
     });
@@ -132,7 +131,7 @@ describe('Credential security check: credential password forbid url', async () =
         });
 
         // @ts-expect-error Accessing a private var
-        const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
+        const ruleLogDebugStub = vi.spyOn(rule._log, 'debug');
 
         const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.passwordComplexity.forbidUrl = true;
@@ -141,9 +140,7 @@ describe('Credential security check: credential password forbid url', async () =
 
         await rulebook.enforce(rule.name, params);
 
-        expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
-            'Rule disabled: Credential has no URL'
-        );
+        expect(ruleLogDebugStub).toHaveBeenCalledWith('Rule disabled: Credential has no URL');
     });
 
     it('disables when there is no password', async () => {
@@ -152,7 +149,7 @@ describe('Credential security check: credential password forbid url', async () =
         });
 
         // @ts-expect-error Accessing a private var
-        const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
+        const ruleLogDebugStub = vi.spyOn(rule._log, 'debug');
 
         const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.passwordComplexity.forbidUrl = true;
@@ -161,8 +158,6 @@ describe('Credential security check: credential password forbid url', async () =
 
         await rulebook.enforce(rule.name, params);
 
-        expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
-            'Rule disabled: Credential has no password'
-        );
+        expect(ruleLogDebugStub).toHaveBeenCalledWith('Rule disabled: Credential has no password');
     });
 });

@@ -1,13 +1,12 @@
-import { expect } from 'chai';
 import path from 'node:path';
 import Rulebook, { Rule } from 'rulebound';
-import sinon from 'sinon';
-import git from '../../../../../src/util/git';
-import npm from '../../../../../src/util/npm';
-import { VaultRuleParameters } from '../../../../../src/vault/enforcable';
-import { keepassVaultStoredWithKeyfile } from '../../../../../src/vault/keepass/rules/vault/vault-stored-with-keyfile';
-import { getBaseVault } from '../../../support/base-vault';
-import { vaultRuleParams } from '../../../support/vault-rule-param';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import git from '../../../../../src/util/git.ts';
+import npm from '../../../../../src/util/npm.ts';
+import { VaultRuleParameters } from '../../../../../src/vault/enforcable.ts';
+import { keepassVaultStoredWithKeyfile } from '../../../../../src/vault/keepass/rules/vault/vault-stored-with-keyfile.ts';
+import { getBaseVault } from '../../../support/base-vault.ts';
+import { vaultRuleParams } from '../../../support/vault-rule-param.ts';
 
 describe('Vault security check: vault stored with keyfile', async () => {
     const vault = await getBaseVault();
@@ -23,17 +22,17 @@ describe('Vault security check: vault stored with keyfile', async () => {
         rulebook.rules = [];
     });
 
-    after(async () => {
+    afterAll(async () => {
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = true;
     });
 
     it('has a description', async () => {
-        expect(rulebook.rules.length).to.equal(1);
+        expect(rulebook.rules.length).toEqual(1);
 
         const rule = rulebook.rules[0];
-        expect(rule.description).to.be.a('string');
-        expect(rule.description?.length).to.be.above(0);
+        expect(rule.description).toBeTypeOf('string');
+        expect(rule.description?.length).toBeGreaterThan(0);
     });
 
     it('does not throw if no keyfile is used', async () => {
@@ -51,14 +50,14 @@ describe('Vault security check: vault stored with keyfile', async () => {
         });
 
         // @ts-expect-error Accessing a private var
-        const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
+        const ruleLogDebugStub = vi.spyOn(rule._log, 'debug');
 
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = true;
 
         await rulebook.enforce(rule.name, params);
 
-        expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
+        expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: Disabled by security config `allowVaultAndKeyfileSameLocation`'
         );
     });
@@ -69,7 +68,7 @@ describe('Vault security check: vault stored with keyfile', async () => {
         });
 
         // @ts-expect-error Accessing a private var
-        const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
+        const ruleLogDebugStub = vi.spyOn(rule._log, 'debug');
 
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
@@ -77,21 +76,19 @@ describe('Vault security check: vault stored with keyfile', async () => {
 
         await rulebook.enforce(rule.name, params);
 
-        expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
-            'Rule disabled: No keyfile defined'
-        );
+        expect(ruleLogDebugStub).toHaveBeenCalledWith('Rule disabled: No keyfile defined');
     });
 
-    context('Git repo', () => {
+    describe('Git repo', () => {
         it('throws when the vault is in the same git repo as the keyfile', async () => {
             const params = await vaultRuleParams(vault);
             params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
             params.vaultCredential.multifactor = vault.path;
 
-            sinon.stub(git, 'getRoot').resolves('my/git/root/path');
-            sinon.stub(git, 'isIgnored').resolves(false);
+            vi.spyOn(git, 'getRoot').mockResolvedValue('my/git/root/path');
+            vi.spyOn(git, 'isIgnored').mockResolvedValue(false);
 
-            await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
+            await expect(rulebook.enforce(rule.name, params)).rejects.toThrow(
                 'Vault and keyfile are in the same Git repository @ my/git/root/path'
             );
         });
@@ -105,13 +102,8 @@ describe('Vault security check: vault stored with keyfile', async () => {
                 params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
                 params.vaultCredential.multifactor = vault.path;
 
-                sinon.stub(git, 'getRoot').resolves('my/git/root/path');
-                sinon
-                    .stub(git, 'isIgnored')
-                    .onFirstCall()
-                    .resolves(true)
-                    .onSecondCall()
-                    .resolves(false);
+                vi.spyOn(git, 'getRoot').mockResolvedValue('my/git/root/path');
+                vi.spyOn(git, 'isIgnored').mockResolvedValueOnce(true).mockResolvedValue(false);
 
                 await rulebook.enforce(rule.name, params);
             }
@@ -126,13 +118,8 @@ describe('Vault security check: vault stored with keyfile', async () => {
                 params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
                 params.vaultCredential.multifactor = vault.path;
 
-                sinon.stub(git, 'getRoot').resolves('my/git/root/path');
-                sinon
-                    .stub(git, 'isIgnored')
-                    .onFirstCall()
-                    .resolves(false)
-                    .onSecondCall()
-                    .resolves(true);
+                vi.spyOn(git, 'getRoot').mockResolvedValue('my/git/root/path');
+                vi.spyOn(git, 'isIgnored').mockResolvedValueOnce(false).mockResolvedValue(true);
 
                 await rulebook.enforce(rule.name, params);
             }
@@ -144,26 +131,23 @@ describe('Vault security check: vault stored with keyfile', async () => {
             params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
             params.vaultCredential.multifactor = 'some/amazing/random/path';
 
-            sinon
-                .stub(git, 'getRoot')
-                .onFirstCall()
-                .resolves('my/git/root/path')
-                .onSecondCall()
-                .resolves('another/git/root/path');
-            sinon.stub(git, 'isIgnored').resolves(false);
+            vi.spyOn(git, 'getRoot')
+                .mockResolvedValueOnce('my/git/root/path')
+                .mockResolvedValue('another/git/root/path');
+            vi.spyOn(git, 'isIgnored').mockResolvedValue(false);
 
-            sinon.stub(npm, 'getRoot').resolves(false);
+            vi.spyOn(npm, 'getRoot').mockResolvedValue(false);
 
             await rulebook.enforce(rule.name, params);
         });
     });
 
-    context('NPM project', () => {
+    describe('NPM project', () => {
         beforeEach(() => {
-            const gitGetRootStub = sinon.stub(git, 'getRoot');
-            gitGetRootStub.onFirstCall().resolves('my/git/root/path');
-            gitGetRootStub.onSecondCall().resolves('another/git/root/path');
-            sinon.stub(git, 'isIgnored').resolves(false);
+            vi.spyOn(git, 'getRoot')
+                .mockResolvedValueOnce('my/git/root/path')
+                .mockResolvedValueOnce('another/git/root/path');
+            vi.spyOn(git, 'isIgnored').mockResolvedValue(false);
         });
 
         it('throws when the vault is in the same npm project as the keyfile', async () => {
@@ -172,9 +156,9 @@ describe('Vault security check: vault stored with keyfile', async () => {
             params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
             params.vaultCredential.multifactor = vault.path;
 
-            sinon.stub(npm, 'getRoot').resolves('my/npm/root/path');
+            vi.spyOn(npm, 'getRoot').mockResolvedValue('my/npm/root/path');
 
-            await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
+            await expect(rulebook.enforce(rule.name, params)).rejects.toThrow(
                 'Vault and keyfile are in the same NPM project @ my/npm/root/path'
             );
         });
@@ -185,33 +169,25 @@ describe('Vault security check: vault stored with keyfile', async () => {
             params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
             params.vaultCredential.multifactor = 'some/amazing/random/path';
 
-            sinon
-                .stub(npm, 'getRoot')
-                .onFirstCall()
-                .resolves('my/npm/root/path')
-                .onSecondCall()
-                .resolves('another/npm/root/path');
+            vi.spyOn(npm, 'getRoot')
+                .mockResolvedValueOnce('my/npm/root/path')
+                .mockResolvedValue('another/npm/root/path');
 
             await rulebook.enforce(rule.name, params);
         });
     });
 
-    context('Directory', () => {
+    describe('Directory', () => {
         beforeEach(() => {
-            sinon
-                .stub(git, 'getRoot')
-                .onFirstCall()
-                .resolves('my/git/root/path')
-                .onSecondCall()
-                .resolves('another/git/root/path');
-            sinon.stub(git, 'isIgnored').resolves(false);
+            vi.spyOn(git, 'getRoot')
+                .mockResolvedValueOnce('my/git/root/path')
 
-            sinon
-                .stub(npm, 'getRoot')
-                .onFirstCall()
-                .resolves('my/npm/root/path')
-                .onSecondCall()
-                .resolves('another/npm/root/path');
+                .mockResolvedValue('another/git/root/path');
+            vi.spyOn(git, 'isIgnored').mockResolvedValue(false);
+
+            vi.spyOn(npm, 'getRoot')
+                .mockResolvedValueOnce('my/npm/root/path')
+                .mockResolvedValue('another/npm/root/path');
         });
 
         it('throws when the vault is in the same directory as the keyfile', async () => {
@@ -223,7 +199,7 @@ describe('Vault security check: vault stored with keyfile', async () => {
                 './keyfile.xml'
             );
 
-            await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
+            await expect(rulebook.enforce(rule.name, params)).rejects.toThrow(
                 'Vault and keyfile are in the same directory @ ' + path.dirname(vault.path)
             );
         });

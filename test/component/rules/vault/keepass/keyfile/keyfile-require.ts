@@ -1,10 +1,9 @@
-import { expect } from 'chai';
 import Rulebook, { Rule } from 'rulebound';
-import * as sinon from 'sinon';
-import { VaultRuleParameters } from '../../../../../../src/vault/enforcable';
-import { keepassVaultKeyfileRequire } from '../../../../../../src/vault/keepass/rules/vault/keyfile/keyfile-require';
-import { getBaseVault } from '../../../../support/base-vault';
-import { vaultRuleParams } from '../../../../support/vault-rule-param';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { VaultRuleParameters } from '../../../../../../src/vault/enforcable.ts';
+import { keepassVaultKeyfileRequire } from '../../../../../../src/vault/keepass/rules/vault/keyfile/keyfile-require.ts';
+import { getBaseVault } from '../../../../support/base-vault.ts';
+import { vaultRuleParams } from '../../../../support/vault-rule-param.ts';
 
 describe('Vault security check: require keyfile', async () => {
     const vault = await getBaseVault();
@@ -20,17 +19,17 @@ describe('Vault security check: require keyfile', async () => {
         rulebook.rules = [];
     });
 
-    after(async () => {
+    afterAll(async () => {
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.requireKeyfile = false;
     });
 
     it('has a description', async () => {
-        expect(rulebook.rules.length).to.equal(1);
+        expect(rulebook.rules.length).toEqual(1);
 
         const rule = rulebook.rules[0];
-        expect(rule.description).to.be.a('string');
-        expect(rule.description?.length).to.be.above(0);
+        expect(rule.description).toBeTypeOf('string');
+        expect(rule.description?.length).toBeGreaterThan(0);
     });
 
     it('throws when there is no keyfile', async () => {
@@ -39,7 +38,7 @@ describe('Vault security check: require keyfile', async () => {
         params.config.vaultRestrictions.requireKeyfile = true;
         params.vaultCredential.multifactor = undefined;
 
-        await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
+        await expect(rulebook.enforce(rule.name, params)).rejects.toThrow(
             'Vault requires keyfile as second authentication factor'
         );
     });
@@ -59,7 +58,7 @@ describe('Vault security check: require keyfile', async () => {
         });
 
         // @ts-expect-error Accessing a private var
-        const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
+        const ruleLogDebugStub = vi.spyOn(rule._log, 'debug');
 
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.requireKeyfile = false;
@@ -67,7 +66,7 @@ describe('Vault security check: require keyfile', async () => {
 
         await rulebook.enforce(rule.name, params);
 
-        expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
+        expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: Disabled by security config `requireKeyfile`'
         );
     });

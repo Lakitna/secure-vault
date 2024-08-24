@@ -1,11 +1,10 @@
-import { expect } from 'chai';
 import Rulebook, { Rule } from 'rulebound';
-import sinon from 'sinon';
-import file from '../../../../../../src/util/file-with-code';
-import { VaultRuleParameters } from '../../../../../../src/vault/enforcable';
-import { keepassVaultKeyfileStoredWithCode } from '../../../../../../src/vault/keepass/rules/vault/keyfile/keyfile-stored-with-code';
-import { getBaseVault } from '../../../../support/base-vault';
-import { vaultRuleParams } from '../../../../support/vault-rule-param';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import file from '../../../../../../src/util/file-with-code.ts';
+import { VaultRuleParameters } from '../../../../../../src/vault/enforcable.ts';
+import { keepassVaultKeyfileStoredWithCode } from '../../../../../../src/vault/keepass/rules/vault/keyfile/keyfile-stored-with-code.ts';
+import { getBaseVault } from '../../../../support/base-vault.ts';
+import { vaultRuleParams } from '../../../../support/vault-rule-param.ts';
 
 describe('Vault security check: keyfile stored with code', async () => {
     const vault = await getBaseVault();
@@ -21,41 +20,41 @@ describe('Vault security check: keyfile stored with code', async () => {
         rulebook.rules = [];
     });
 
-    after(async () => {
+    afterAll(async () => {
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.allowKeyfileWithCode = true;
     });
 
     it('has a description', async () => {
-        expect(rulebook.rules.length).to.equal(1);
+        expect(rulebook.rules.length).toEqual(1);
 
         const rule = rulebook.rules[0];
-        expect(rule.description).to.be.a('string');
-        expect(rule.description?.length).to.be.above(0);
+        expect(rule.description).toBeTypeOf('string');
+        expect(rule.description?.length).toBeGreaterThan(0);
     });
 
     it('throws when the keyfile is stored with code', async () => {
         const params = await vaultRuleParams(vault);
 
         params.config.vaultRestrictions.allowKeyfileWithCode = false;
-        const stub = sinon.stub(file, 'fileWithCode').resolves(true);
+        const stub = vi.spyOn(file, 'fileWithCode').mockResolvedValue(true);
         params.vaultCredential.multifactor = 'path/to/keyfile';
 
-        await expect(rulebook.enforce(rule.name, params)).to.be.rejectedWith(
+        await expect(rulebook.enforce(rule.name, params)).rejects.toThrow(
             'Keyfile is stored with source code'
         );
-        expect(stub).to.have.been.called;
+        expect(stub).toHaveBeenCalled();
     });
 
     it('does not throw when the keyfile is not stored with code', async () => {
         const params = await vaultRuleParams(vault);
 
         params.config.vaultRestrictions.allowKeyfileWithCode = false;
-        const stub = sinon.stub(file, 'fileWithCode').resolves(false);
+        const stub = vi.spyOn(file, 'fileWithCode').mockResolvedValue(false);
         params.vaultCredential.multifactor = 'path/to/keyfile';
 
         await rulebook.enforce(rule.name, params);
-        expect(stub).to.have.been.called;
+        expect(stub).toHaveBeenCalled();
     });
 
     it('disables when storing with code is allowed', async () => {
@@ -64,17 +63,17 @@ describe('Vault security check: keyfile stored with code', async () => {
         });
 
         // @ts-expect-error Accessing a private var
-        const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
+        const ruleLogDebugStub = vi.spyOn(rule._log, 'debug');
 
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.allowKeyfileWithCode = true;
-        const stub = sinon.stub(file, 'fileWithCode').resolves(true);
+        const stub = vi.spyOn(file, 'fileWithCode').mockResolvedValue(true);
         params.vaultCredential.multifactor = 'path/to/keyfile';
 
         await rulebook.enforce(rule.name, params);
-        expect(stub).to.not.have.been.called;
+        expect(stub).toHaveBeenCalledTimes(0);
 
-        expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
+        expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: Disabled by security config `allowKeyfileWithCode`'
         );
     });
@@ -85,18 +84,16 @@ describe('Vault security check: keyfile stored with code', async () => {
         });
 
         // @ts-expect-error Accessing a private var
-        const ruleLogDebugStub = sinon.stub(rule._log, 'debug');
+        const ruleLogDebugStub = vi.spyOn(rule._log, 'debug');
 
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.allowKeyfileWithCode = false;
-        const stub = sinon.stub(file, 'fileWithCode').resolves(true);
+        const stub = vi.spyOn(file, 'fileWithCode').mockResolvedValue(true);
         params.vaultCredential.multifactor = undefined;
 
         await rulebook.enforce(rule.name, params);
-        expect(stub).to.not.have.been.called;
+        expect(stub).toHaveBeenCalledTimes(0);
 
-        expect(ruleLogDebugStub).to.have.been.calledOnceWithExactly(
-            'Rule disabled: No keyfile defined'
-        );
+        expect(ruleLogDebugStub).toHaveBeenCalledWith('Rule disabled: No keyfile defined');
     });
 });

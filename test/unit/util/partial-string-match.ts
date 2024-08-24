@@ -1,7 +1,7 @@
-import { expect } from 'chai';
 import { FuseResult } from 'fuse.js';
-import { SecretValue } from '../../../src/secret-value';
-import { detectPartialStringMatch } from '../../../src/util/partial-string-match';
+import { describe, expect, it } from 'vitest';
+import { SecretValue } from '../../../src/secret-value.ts';
+import { detectPartialStringMatch } from '../../../src/util/partial-string-match.ts';
 
 describe('Partial string matcher util', () => {
     it('matches a string with an exact SecretValue', async () => {

@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import { KeepassVault, SecretValue } from '../../../src';
+import { KeepassVault, SecretValue } from '../../../src/index.ts';
 
 export async function getBaseVault() {
     const vaultPath = fileURLToPath(new URL('base-test-vault.kdbx', import.meta.url));

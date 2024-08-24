@@ -1,46 +1,31 @@
-import { expect } from 'chai';
-import esmock from 'esmock';
-import sinon from 'sinon';
+import { packageUp } from 'package-up';
+import { describe, expect, it, MockedFunction, vi } from 'vitest';
+import npm from '../../../src/util/npm.ts';
+
+vi.mock('package-up', () => {
+    return { packageUp: vi.fn() };
+});
+const packageUpMock = packageUp as MockedFunction<typeof packageUp>;
 
 describe('NPM project utils', () => {
     it('returns the root folder if in an npm project', async () => {
-        const packageUpStub = sinon.stub().resolves('some/directory/path');
-        const mockedModule = await esmock(
-            '../../../src/util/npm.ts',
-            import.meta.url,
-            {
-                'package-up': {
-                    packageUp: packageUpStub,
-                },
-            },
-            {}
-        );
+        packageUpMock.mockResolvedValueOnce('some/directory/path');
 
-        const result = await mockedModule.getRoot('my/amazing/directory/path');
+        const result = await npm.getRoot('my/amazing/directory/path');
 
-        expect(result).to.equal('some/directory/path');
-        expect(packageUpStub).to.have.been.calledOnceWithExactly({
+        expect(result).toEqual('some/directory/path');
+        expect(packageUpMock).toHaveBeenCalledWith({
             cwd: 'my/amazing/directory/path',
         });
     });
 
     it('returns false if not in an npm project', async () => {
-        const packageUpStub = sinon.stub().resolves(undefined);
-        const mockedModule = await esmock(
-            '../../../src/util/npm.ts',
-            import.meta.url,
-            {
-                'package-up': {
-                    packageUp: packageUpStub,
-                },
-            },
-            {}
-        );
+        packageUpMock.mockResolvedValueOnce(undefined);
 
-        const result = await mockedModule.getRoot('my/amazing/directory/path');
+        const result = await npm.getRoot('my/amazing/directory/path');
 
-        expect(result).to.be.false;
-        expect(packageUpStub).to.have.been.calledOnceWithExactly({
+        expect(result).toEqual(false);
+        expect(packageUpMock).toHaveBeenCalledWith({
             cwd: 'my/amazing/directory/path',
         });
     });
