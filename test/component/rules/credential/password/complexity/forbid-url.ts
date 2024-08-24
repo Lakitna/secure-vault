@@ -6,11 +6,11 @@ import { CredentialRuleParameters } from '../../../../../../src/vault/enforcable
 import { getBaseVault } from '../../../../support/base-vault.ts';
 import { credentialRuleParam } from '../../../../support/credential-rule-param.ts';
 
-describe('Credential security check: credential password forbid url', async () => {
-    const vault = await getBaseVault();
-    const rulebook = new Rulebook<CredentialRuleParameters>();
-    let rule: Rule<CredentialRuleParameters>;
+const vault = await getBaseVault();
+const rulebook = new Rulebook<CredentialRuleParameters>();
+let rule: Rule<CredentialRuleParameters>;
 
+describe('Credential security check: credential password forbid url', () => {
     beforeEach(() => {
         rule = credentialPasswordComplexityForbidUrl();
         rulebook.add(rule);
@@ -68,7 +68,7 @@ describe('Credential security check: credential password forbid url', async () =
         const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.passwordComplexity.forbidUrl = false;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: Disabled by security config `forbidUrl`'
@@ -82,7 +82,7 @@ describe('Credential security check: credential password forbid url', async () =
         params.credential.data.password = new SecretValue('string', 'lorum-ipsum');
         params.credential.data.url = 'https://google.com';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('does not throw when the matching bit is in the url path', async () => {
@@ -92,7 +92,7 @@ describe('Credential security check: credential password forbid url', async () =
         params.credential.data.password = new SecretValue('string', 'lorum-ipsum');
         params.credential.data.url = 'https://google.com/lorum/ipsum/dolor';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('does not throw when the matching bit is a short domain part', async () => {
@@ -102,7 +102,7 @@ describe('Credential security check: credential password forbid url', async () =
         params.credential.data.password = new SecretValue('string', 'agglcomagglcom');
         params.credential.data.url = 'https://a.ggl.com';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('does not throw when the matching bit is in the url query string parameters', async () => {
@@ -112,7 +112,7 @@ describe('Credential security check: credential password forbid url', async () =
         params.credential.data.password = new SecretValue('string', 'lorum-ipsum');
         params.credential.data.url = 'https://google.com?lorum=ipsum';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('does not throw when the matching bit is in the url fragment', async () => {
@@ -122,7 +122,7 @@ describe('Credential security check: credential password forbid url', async () =
         params.credential.data.password = new SecretValue('string', 'lorum-ipsum');
         params.credential.data.url = 'https://google.com#lorum-ipsum';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('disables when there is no url', async () => {
@@ -138,7 +138,7 @@ describe('Credential security check: credential password forbid url', async () =
         params.credential.data.password = new SecretValue('string', 'lorum-ipsum');
         params.credential.data.url = '';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogDebugStub).toHaveBeenCalledWith('Rule disabled: Credential has no URL');
     });
@@ -156,7 +156,7 @@ describe('Credential security check: credential password forbid url', async () =
         params.credential.data.password = new SecretValue('string', '');
         params.credential.data.url = 'https://google.com';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogDebugStub).toHaveBeenCalledWith('Rule disabled: Credential has no password');
     });

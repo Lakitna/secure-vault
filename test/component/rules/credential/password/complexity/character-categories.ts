@@ -6,11 +6,11 @@ import { CredentialRuleParameters } from '../../../../../../src/vault/enforcable
 import { getBaseVault } from '../../../../support/base-vault.ts';
 import { credentialRuleParam } from '../../../../support/credential-rule-param.ts';
 
-describe('Credential security check: credential password character categories', async () => {
-    const vault = await getBaseVault();
-    const rulebook = new Rulebook<CredentialRuleParameters>();
-    let rule: Rule<CredentialRuleParameters>;
+const vault = await getBaseVault();
+const rulebook = new Rulebook<CredentialRuleParameters>();
+let rule: Rule<CredentialRuleParameters>;
 
+describe('Credential security check: credential password character categories', () => {
     beforeEach(() => {
         rule = credentialPasswordComplexityCharacterCategories();
         rulebook.add(rule);
@@ -51,7 +51,7 @@ describe('Credential security check: credential password character categories', 
         params.config.credentialRestrictions.passwordComplexity.minCharacterCategories = 2;
         params.credential.data.password = new SecretValue('string', 'abc123');
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('does not throw when the password uses the more categories', async () => {
@@ -60,7 +60,7 @@ describe('Credential security check: credential password character categories', 
         params.config.credentialRestrictions.passwordComplexity.minCharacterCategories = 2;
         params.credential.data.password = new SecretValue('string', 'abc123ABC');
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('enforces and does not throw when the config is 1', async () => {
@@ -72,7 +72,7 @@ describe('Credential security check: credential password character categories', 
         params.config.credentialRestrictions.passwordComplexity.minCharacterCategories = 1;
         params.credential.data.password = new SecretValue('string', '');
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(disabledLogErrorStub).toHaveBeenCalledTimes(0);
     });
@@ -86,7 +86,7 @@ describe('Credential security check: credential password character categories', 
         params.config.credentialRestrictions.passwordComplexity.minCharacterCategories = 4;
         params.credential.data.password = new SecretValue('string', 'abc123ABC!@#');
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(disabledLogErrorStub).toHaveBeenCalledTimes(0);
     });
@@ -102,7 +102,7 @@ describe('Credential security check: credential password character categories', 
         const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.passwordComplexity.minCharacterCategories = 0;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogErrorStub).toHaveBeenCalledWith(
             'Rule disabled: Configuration error: Min character category count can not be below 1'
@@ -120,7 +120,7 @@ describe('Credential security check: credential password character categories', 
         const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.passwordComplexity.minCharacterCategories = 5;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogErrorStub).toHaveBeenCalledWith(
             'Rule disabled: Configuration error: Min character category count can not be above 4'

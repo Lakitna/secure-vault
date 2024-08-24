@@ -6,11 +6,11 @@ import { VaultRuleParameters } from '../../../../../../src/vault/enforcable.ts';
 import { getBaseVault } from '../../../../support/base-vault.ts';
 import { vaultRuleParams } from '../../../../support/vault-rule-param.ts';
 
-describe('Vault security check: vault password character categories', async () => {
-    const vault = await getBaseVault();
-    const rulebook = new Rulebook<VaultRuleParameters>();
-    let rule: Rule<VaultRuleParameters>;
+const vault = await getBaseVault();
+const rulebook = new Rulebook<VaultRuleParameters>();
+let rule: Rule<VaultRuleParameters>;
 
+describe('Vault security check: vault password character categories', () => {
     beforeEach(() => {
         rule = vaultPasswordComplexityCharacterCategories();
         rulebook.add(rule);
@@ -51,7 +51,7 @@ describe('Vault security check: vault password character categories', async () =
         params.config.vaultRestrictions.passwordComplexity.minCharacterCategories = 2;
         params.vaultCredential.password = new SecretValue('string', 'abc123');
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('does not throw when the password uses the more categories', async () => {
@@ -60,7 +60,7 @@ describe('Vault security check: vault password character categories', async () =
         params.config.vaultRestrictions.passwordComplexity.minCharacterCategories = 2;
         params.vaultCredential.password = new SecretValue('string', 'abc123ABC');
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('does not throw when the config is 1', async () => {
@@ -72,7 +72,7 @@ describe('Vault security check: vault password character categories', async () =
         params.config.vaultRestrictions.passwordComplexity.minCharacterCategories = 1;
         params.vaultCredential.password = new SecretValue('string', '');
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(disableLogErrorStub).toHaveBeenCalledTimes(0);
     });
@@ -86,7 +86,7 @@ describe('Vault security check: vault password character categories', async () =
         params.config.vaultRestrictions.passwordComplexity.minCharacterCategories = 4;
         params.vaultCredential.password = new SecretValue('string', 'abc123ABC!@#');
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(disabledLogErrorStub).toHaveBeenCalledTimes(0);
     });
@@ -102,7 +102,7 @@ describe('Vault security check: vault password character categories', async () =
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.passwordComplexity.minCharacterCategories = 0;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogErrorStub).toHaveBeenCalledWith(
             'Rule disabled: Configuration error: Min character category count can not be below 1'
@@ -120,7 +120,7 @@ describe('Vault security check: vault password character categories', async () =
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.passwordComplexity.minCharacterCategories = 5;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogErrorStub).toHaveBeenCalledWith(
             'Rule disabled: Configuration error: Min character category count can not be above 4'

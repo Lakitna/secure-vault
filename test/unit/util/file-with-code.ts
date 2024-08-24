@@ -28,7 +28,7 @@ describe('File with code', () => {
 
         const result = await fileWithCode('my/amazing/directory/file-path.ext');
 
-        expect(result).to.be.false;
+        expect(result).toEqual(false);
         expect(gitGetRootStub).toHaveBeenCalledWith('my/amazing/directory');
         expect(gitGetRootStub).toHaveBeenCalledWith(process.cwd());
         expect(gitIsIgnoredStub).toHaveBeenCalledWith('my/amazing/directory/file-path.ext');
@@ -42,7 +42,7 @@ describe('File with code', () => {
 
         const result = await fileWithCode('my/amazing/directory/file-path.ext');
 
-        expect(result).to.be.true;
+        expect(result).toEqual(true);
         expect(gitGetRootStub).toHaveBeenCalledWith('my/amazing/directory');
         expect(gitIsIgnoredStub).toHaveBeenCalledTimes(0);
         expect(npmGetRootStub).toHaveBeenCalledWith('my/amazing/directory');
@@ -59,7 +59,7 @@ describe('File with code', () => {
 
         const result = await fileWithCode('my/amazing/directory/file-path.ext');
 
-        expect(result).to.be.false;
+        expect(result).toEqual(false);
         expect(gitGetRootStub).toHaveBeenCalledWith('my/amazing/directory');
         expect(gitIsIgnoredStub).toHaveBeenCalledTimes(0);
         expect(npmGetRootStub).toHaveBeenCalledWith('my/amazing/directory');
@@ -73,7 +73,7 @@ describe('File with code', () => {
 
         const result = await fileWithCode('my/amazing/directory/file-path.ext');
 
-        expect(result).to.be.false;
+        expect(result).toEqual(false);
         expect(gitGetRootStub).toHaveBeenCalledWith('my/amazing/directory');
         expect(gitIsIgnoredStub).toHaveBeenCalledWith('my/amazing/directory/file-path.ext');
         expect(npmGetRootStub).toHaveBeenCalledTimes(0);
@@ -86,7 +86,7 @@ describe('File with code', () => {
 
         const result = await fileWithCode('my/amazing/directory/file-path.ext');
 
-        expect(result).to.be.false;
+        expect(result).toEqual(false);
         expect(gitGetRootStub).toHaveBeenCalledWith('my/amazing/directory');
         expect(gitIsIgnoredStub).toHaveBeenCalledTimes(0);
         expect(npmGetRootStub).toHaveBeenCalledWith('my/amazing/directory');

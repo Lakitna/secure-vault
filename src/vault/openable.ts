@@ -12,7 +12,7 @@ export interface VaultConnectionDetails {
     multifactor?: string;
 }
 
-export interface OpenableVaultOptions extends EnforcableVaultOptions {}
+export type OpenableVaultOptions = EnforcableVaultOptions;
 
 export abstract class OpenableVault<V = unknown> extends EnforcableVault {
     public openable = true;

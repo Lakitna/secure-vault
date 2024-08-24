@@ -6,11 +6,11 @@ import { VaultRuleParameters } from '../../../../../../src/vault/enforcable.ts';
 import { getBaseVault } from '../../../../support/base-vault.ts';
 import { vaultRuleParams } from '../../../../support/vault-rule-param.ts';
 
-describe('Vault security check: vault password forbid reuse', async () => {
-    const vault = await getBaseVault();
-    const rulebook = new Rulebook<VaultRuleParameters>();
-    let rule: Rule<VaultRuleParameters>;
+const vault = await getBaseVault();
+const rulebook = new Rulebook<VaultRuleParameters>();
+let rule: Rule<VaultRuleParameters>;
 
+describe('Vault security check: vault password forbid reuse', () => {
     beforeEach(() => {
         rule = vaultPasswordComplexityCharacterForbidReuse();
         rulebook.add(rule);
@@ -58,7 +58,7 @@ describe('Vault security check: vault password forbid reuse', async () => {
         params.config.vaultRestrictions.passwordComplexity.forbidReuse = false;
         params.vaultCredential.password = new SecretValue('string', 'lorum-ipsum');
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: Disabled by security config `forbidReuse`'
@@ -78,7 +78,7 @@ describe('Vault security check: vault password forbid reuse', async () => {
         params.config.vaultRestrictions.passwordComplexity.forbidReuse = true;
         params.vaultCredential.password = new SecretValue('string', '');
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogDebugStub).toHaveBeenCalledWith('Rule disabled: No vault password');
     });
@@ -90,6 +90,6 @@ describe('Vault security check: vault password forbid reuse', async () => {
         // The vault contains a credential with password 'lorum-ipsum'
         params.vaultCredential.password = new SecretValue('string', 'orum-ipsum');
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 });

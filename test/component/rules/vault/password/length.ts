@@ -6,11 +6,11 @@ import { VaultRuleParameters } from '../../../../../src/vault/enforcable.ts';
 import { getBaseVault } from '../../../support/base-vault.ts';
 import { vaultRuleParams } from '../../../support/vault-rule-param.ts';
 
-describe('Vault security check: vault password length', async () => {
-    const vault = await getBaseVault();
-    const rulebook = new Rulebook<VaultRuleParameters>();
-    let rule: Rule<VaultRuleParameters>;
+const vault = await getBaseVault();
+const rulebook = new Rulebook<VaultRuleParameters>();
+let rule: Rule<VaultRuleParameters>;
 
+describe('Vault security check: vault password length', () => {
     beforeEach(() => {
         rule = vaultPasswordLength();
         rulebook.add(rule);
@@ -50,7 +50,7 @@ describe('Vault security check: vault password length', async () => {
         params.config.vaultRestrictions.minPasswordLength = 10;
         params.vaultCredential.password = new SecretValue('string', '0123456789');
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('does not throw when the vault password is longer than minimum', async () => {
@@ -59,7 +59,7 @@ describe('Vault security check: vault password length', async () => {
         params.config.vaultRestrictions.minPasswordLength = 3;
         params.vaultCredential.password = new SecretValue('string', '0123456789');
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('does not throw when the config is 0', async () => {
@@ -69,7 +69,7 @@ describe('Vault security check: vault password length', async () => {
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.minPasswordLength = 0;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogErrorStub).toHaveBeenCalledTimes(0);
     });
@@ -85,7 +85,7 @@ describe('Vault security check: vault password length', async () => {
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.minPasswordLength = -5;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogErrorStub).toHaveBeenCalledWith(
             'Rule disabled: Configuration error: Min password length can not be below 0'

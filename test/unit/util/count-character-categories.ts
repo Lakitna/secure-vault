@@ -24,14 +24,14 @@ describe('Count character categories', () => {
     it('returns 0 for an empty string', () => {
         const result = countCharacterCategories('');
 
-        expect(result).to.equal(0);
+        expect(result).toEqual(0);
     });
 
     for (const category of categories) {
         it(`returns 1 for an ${category.description} string`, () => {
             const result = countCharacterCategories(category.value + category.value);
 
-            expect(result).to.equal(1);
+            expect(result).toEqual(1);
         });
     }
 
@@ -40,7 +40,7 @@ describe('Count character categories', () => {
             categories[0].value + categories[1].value + categories[0].value + categories[1].value
         );
 
-        expect(result).to.equal(2);
+        expect(result).toEqual(2);
     });
 
     it('returns 3 for a string with 3 categories', () => {
@@ -53,7 +53,7 @@ describe('Count character categories', () => {
                 categories[2].value
         );
 
-        expect(result).to.equal(3);
+        expect(result).toEqual(3);
     });
 
     it('returns 4 for a string with 4 categories', () => {
@@ -68,6 +68,6 @@ describe('Count character categories', () => {
                 categories[3].value
         );
 
-        expect(result).to.equal(4);
+        expect(result).toEqual(4);
     });
 });

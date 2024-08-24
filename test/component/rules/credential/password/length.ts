@@ -6,11 +6,11 @@ import { CredentialRuleParameters } from '../../../../../src/vault/enforcable.ts
 import { getBaseVault } from '../../../support/base-vault.ts';
 import { credentialRuleParam } from '../../../support/credential-rule-param.ts';
 
-describe('Credential security check: credential password length', async () => {
-    const vault = await getBaseVault();
-    const rulebook = new Rulebook<CredentialRuleParameters>();
-    let rule: Rule<CredentialRuleParameters>;
+const vault = await getBaseVault();
+const rulebook = new Rulebook<CredentialRuleParameters>();
+let rule: Rule<CredentialRuleParameters>;
 
+describe('Credential security check: credential password length', () => {
     beforeEach(() => {
         rule = credentialPasswordLength();
         rulebook.add(rule);
@@ -50,7 +50,7 @@ describe('Credential security check: credential password length', async () => {
         params.config.credentialRestrictions.minPasswordLength = 10;
         params.credential.data.password = new SecretValue('string', '0123456789');
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('does not throw when the credential password is longer than minimum', async () => {
@@ -59,7 +59,7 @@ describe('Credential security check: credential password length', async () => {
         params.config.credentialRestrictions.minPasswordLength = 3;
         params.credential.data.password = new SecretValue('string', '0123456789');
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('does not throw when the config is 0', async () => {
@@ -69,7 +69,7 @@ describe('Credential security check: credential password length', async () => {
         const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.minPasswordLength = 0;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogErrorStub).toHaveBeenCalledTimes(0);
     });
@@ -85,7 +85,7 @@ describe('Credential security check: credential password length', async () => {
         const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.minPasswordLength = -5;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogErrorStub).toHaveBeenCalledWith(
             'Rule disabled: Configuration error: Min password length can not be below 0'

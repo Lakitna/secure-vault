@@ -5,11 +5,11 @@ import { CredentialRuleParameters } from '../../../../../src/vault/enforcable.ts
 import { getBaseVault } from '../../../support/base-vault.ts';
 import { credentialRuleParam } from '../../../support/credential-rule-param.ts';
 
-describe('Credential security check: credential password age', async () => {
-    const vault = await getBaseVault();
-    const rulebook = new Rulebook<CredentialRuleParameters>();
-    let rule: Rule<CredentialRuleParameters>;
+const vault = await getBaseVault();
+const rulebook = new Rulebook<CredentialRuleParameters>();
+let rule: Rule<CredentialRuleParameters>;
 
+describe('Credential security check: credential password age', () => {
     beforeEach(() => {
         rule = credentialPasswordAge();
         rulebook.add(rule);
@@ -49,7 +49,7 @@ describe('Credential security check: credential password age', async () => {
         params.config.credentialRestrictions.maxPasswordAge = 10;
         params.credential.passwordAge = 5;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('disables when the config is 0', async () => {
@@ -63,7 +63,7 @@ describe('Credential security check: credential password age', async () => {
         const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.maxPasswordAge = 0;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogErrorStub).toHaveBeenCalledWith(
             'Rule disabled: Configuration error: Max password age can not be equal to or below 0'
@@ -81,7 +81,7 @@ describe('Credential security check: credential password age', async () => {
         const params = await credentialRuleParam(vault);
         params.config.credentialRestrictions.maxPasswordAge = -5;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogErrorStub).toHaveBeenCalledWith(
             'Rule disabled: Configuration error: Max password age can not be equal to or below 0'

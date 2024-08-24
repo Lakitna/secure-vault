@@ -6,11 +6,11 @@ import { fileVaultPasswordComplexityCharacterForbidVaultPath } from '../../../..
 import { getBaseVault } from '../../../../support/base-vault.ts';
 import { vaultRuleParams } from '../../../../support/vault-rule-param.ts';
 
-describe('Vault security check: vault password forbid vault path', async () => {
-    const vault = await getBaseVault();
-    const rulebook = new Rulebook<VaultRuleParameters>();
-    let rule: Rule<VaultRuleParameters>;
+const vault = await getBaseVault();
+const rulebook = new Rulebook<VaultRuleParameters>();
+let rule: Rule<VaultRuleParameters>;
 
+describe('Vault security check: vault password forbid vault path', () => {
     beforeEach(() => {
         rule = fileVaultPasswordComplexityCharacterForbidVaultPath();
         rulebook.add(rule);
@@ -58,7 +58,7 @@ describe('Vault security check: vault password forbid vault path', async () => {
         params.vaultCredential.password = new SecretValue('string', 'lorum-ipsum');
         params.vaultCredential.vaultPath = '/some/file/path/lorum/ipsum.kdbx';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: Disabled by security config `forbidVaultPath`'
@@ -72,7 +72,7 @@ describe('Vault security check: vault password forbid vault path', async () => {
         params.vaultCredential.password = new SecretValue('string', 'lorum-ipsum');
         params.vaultCredential.vaultPath = '/some/file/path/vault.kdbx';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('disables when there is no password', async () => {
@@ -88,7 +88,7 @@ describe('Vault security check: vault password forbid vault path', async () => {
         params.vaultCredential.password = new SecretValue('string', '');
         params.vaultCredential.vaultPath = '/some/file/path/vault.kdbx';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: No vault password, nothing to check'

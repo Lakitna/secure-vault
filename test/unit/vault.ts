@@ -1,5 +1,3 @@
-import esmock from 'esmock';
-import sinon from 'sinon';
 import { describe, expect, it, vi } from 'vitest';
 import { BaseVaultCredential } from '../../src/config/vault-password-prompt.ts';
 import { SecretValue } from '../../src/secret-value.ts';
@@ -10,11 +8,11 @@ describe('Abstract vault', () => {
         // @ts-expect-error Make instance of abstract class
         const vault = new BaseVault({});
 
-        expect(vault.id).to.equal('[unknown]');
-        expect(vault.enforcable).to.be.false;
-        expect(vault.openable).to.be.false;
-        expect(vault.readable).to.be.false;
-        expect(vault.writable).to.be.false;
+        expect(vault.id).toEqual('[unknown]');
+        expect(vault.enforcable).toEqual(false);
+        expect(vault.openable).toEqual(false);
+        expect(vault.readable).toEqual(false);
+        expect(vault.writable).toEqual(false);
     });
 
     it('constructs with user config', () => {
@@ -25,11 +23,11 @@ describe('Abstract vault', () => {
         // @ts-expect-error Make instance of abstract class
         const vault = new BaseVault(opts);
 
-        expect(vault.id).to.equal('test');
-        expect(vault.enforcable).to.be.false;
-        expect(vault.openable).to.be.false;
-        expect(vault.readable).to.be.false;
-        expect(vault.writable).to.be.false;
+        expect(vault.id).toEqual('test');
+        expect(vault.enforcable).toEqual(false);
+        expect(vault.openable).toEqual(false);
+        expect(vault.readable).toEqual(false);
+        expect(vault.writable).toEqual(false);
     });
 
     describe.skip('getVaultCredential', () => {
@@ -41,9 +39,9 @@ describe('Abstract vault', () => {
         };
 
         it('prompts the user if password save is not allowed', async () => {
-            const forgetRememberedPasswordStub = vi.fn.stub();
-            const getRememberedPasswordStub = sinon.stub();
-            const rememberPasswordStub = sinon.stub();
+            const forgetRememberedPasswordStub = vi.fn();
+            const getRememberedPasswordStub = vi.fn();
+            const rememberPasswordStub = vi.fn();
             const mockedModule = await esmock(
                 '../../src/vault/vault.ts',
                 import.meta.url,
@@ -56,7 +54,7 @@ describe('Abstract vault', () => {
                 },
                 {}
             );
-            const userPromptStub = sinon.stub().resolves(userPromptStubReturn);
+            const userPromptStub = vi.fn().resolves(userPromptStubReturn);
 
             const vault = new mockedModule.Vault({
                 securityConfig: {
@@ -79,8 +77,8 @@ describe('Abstract vault', () => {
         });
 
         it('prompts the user if this is the second attempt to open the vault', async () => {
-            const getRememberedPasswordStub = sinon.stub();
-            const rememberPasswordStub = sinon.stub();
+            const getRememberedPasswordStub = vi.fn();
+            const rememberPasswordStub = vi.fn();
             const mockedModule = await esmock(
                 '../../src/vault/vault.ts',
                 import.meta.url,
@@ -92,7 +90,7 @@ describe('Abstract vault', () => {
                 },
                 {}
             );
-            const userPromptStub = sinon.stub().resolves(userPromptStubReturn);
+            const userPromptStub = vi.fn().resolves(userPromptStubReturn);
 
             const vault = new mockedModule.Vault({
                 securityConfig: {
@@ -110,8 +108,8 @@ describe('Abstract vault', () => {
         });
 
         it('prompts after remembered password is not found', async () => {
-            const getRememberedPasswordStub = sinon.stub().resolves(null);
-            const rememberPasswordStub = sinon.stub();
+            const getRememberedPasswordStub = vi.fn().resolves(null);
+            const rememberPasswordStub = vi.fn();
             const mockedModule = await esmock(
                 '../../src/vault/vault.ts',
                 import.meta.url,
@@ -123,7 +121,7 @@ describe('Abstract vault', () => {
                 },
                 {}
             );
-            const userPromptStub = sinon.stub().resolves(userPromptStubReturn);
+            const userPromptStub = vi.fn().resolves(userPromptStubReturn);
 
             const vault = new mockedModule.Vault({
                 securityConfig: {
@@ -148,7 +146,7 @@ describe('Abstract vault', () => {
             const getRememberedPasswordStub = sinon
                 .stub()
                 .resolves(new SecretValue('string', 'remembered-password'));
-            const rememberPasswordStub = sinon.stub();
+            const rememberPasswordStub = vi.fn();
             const mockedModule = await esmock(
                 '../../src/vault/vault.ts',
                 import.meta.url,
@@ -160,7 +158,7 @@ describe('Abstract vault', () => {
                 },
                 {}
             );
-            const userPromptStub = sinon.stub();
+            const userPromptStub = vi.fn();
             const consoleLogStub = sinon.stub(console, 'log');
 
             const vault = new mockedModule.Vault({
@@ -181,8 +179,8 @@ describe('Abstract vault', () => {
             expect(rememberPasswordStub).to.have.not.been.called;
 
             expect(result.password).to.be.instanceOf(SecretValue);
-            expect(result.password.expose()).to.equal('remembered-password');
-            expect(result.savePassword).to.be.false;
+            expect(result.password.expose()).toEqual('remembered-password');
+            expect(result.savePassword).toEqual(false);
 
             expect(consoleLogStub).to.have.been.calledOnceWithExactly(
                 'Using remembered vault password'
@@ -190,8 +188,8 @@ describe('Abstract vault', () => {
         });
 
         it('saves the password after prompting if the user wants it', async () => {
-            const getRememberedPasswordStub = sinon.stub();
-            const rememberPasswordStub = sinon.stub();
+            const getRememberedPasswordStub = vi.fn();
+            const rememberPasswordStub = vi.fn();
             const mockedModule = await esmock(
                 '../../src/vault/vault.ts',
                 import.meta.url,

@@ -5,11 +5,11 @@ import { keepassVaultKeyfileRequire } from '../../../../../../src/vault/keepass/
 import { getBaseVault } from '../../../../support/base-vault.ts';
 import { vaultRuleParams } from '../../../../support/vault-rule-param.ts';
 
-describe('Vault security check: require keyfile', async () => {
-    const vault = await getBaseVault();
-    const rulebook = new Rulebook<VaultRuleParameters>();
-    let rule: Rule<VaultRuleParameters>;
+const vault = await getBaseVault();
+const rulebook = new Rulebook<VaultRuleParameters>();
+let rule: Rule<VaultRuleParameters>;
 
+describe('Vault security check: require keyfile', () => {
     beforeEach(() => {
         rule = keepassVaultKeyfileRequire();
         rulebook.add(rule);
@@ -49,7 +49,7 @@ describe('Vault security check: require keyfile', async () => {
         params.config.vaultRestrictions.requireKeyfile = true;
         params.vaultCredential.multifactor = 'path/to/keyfile';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('disables when a keyfile is not required', async () => {
@@ -64,7 +64,7 @@ describe('Vault security check: require keyfile', async () => {
         params.config.vaultRestrictions.requireKeyfile = false;
         params.vaultCredential.multifactor = undefined;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: Disabled by security config `requireKeyfile`'

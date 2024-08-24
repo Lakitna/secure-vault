@@ -6,11 +6,11 @@ import { fileVaultStoredWithCode } from '../../../../../src/vault/file/rules/vau
 import { getBaseVault } from '../../../support/base-vault.ts';
 import { vaultRuleParams } from '../../../support/vault-rule-param.ts';
 
-describe('Vault security check: vault stored with code', async () => {
-    const vault = await getBaseVault();
-    const rulebook = new Rulebook<VaultRuleParameters>();
-    let rule: Rule<VaultRuleParameters>;
+const vault = await getBaseVault();
+const rulebook = new Rulebook<VaultRuleParameters>();
+let rule: Rule<VaultRuleParameters>;
 
+describe('Vault security check: vault stored with code', () => {
     beforeEach(() => {
         rule = fileVaultStoredWithCode();
         rulebook.add(rule);
@@ -51,7 +51,7 @@ describe('Vault security check: vault stored with code', async () => {
         params.config.vaultRestrictions.allowVaultWithCode = false;
         const stub = vi.spyOn(file, 'fileWithCode').mockResolvedValue(false);
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
         expect(stub).toHaveBeenCalled();
     });
 
@@ -67,7 +67,7 @@ describe('Vault security check: vault stored with code', async () => {
         params.config.vaultRestrictions.allowVaultWithCode = true;
         const stub = vi.spyOn(file, 'fileWithCode').mockResolvedValue(true);
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(stub).toHaveBeenCalledTimes(0);
         expect(ruleLogDebugStub).toHaveBeenCalledWith(

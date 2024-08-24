@@ -8,11 +8,11 @@ import { keepassVaultPasswordComplexityCharacterForbidVaultName } from '../../..
 import { getBaseVault } from '../../../../support/base-vault.ts';
 import { vaultRuleParams } from '../../../../support/vault-rule-param.ts';
 
-describe('Vault security check: vault password forbid vault name', async () => {
-    const vault = await getBaseVault();
-    const rulebook = new Rulebook<VaultRuleParameters>();
-    let rule: Rule<VaultRuleParameters>;
+const vault = await getBaseVault();
+const rulebook = new Rulebook<VaultRuleParameters>();
+let rule: Rule<VaultRuleParameters>;
 
+describe('Vault security check: vault password forbid vault name', () => {
     beforeEach(() => {
         rule = keepassVaultPasswordComplexityCharacterForbidVaultName();
         rulebook.add(rule);
@@ -64,7 +64,7 @@ describe('Vault security check: vault password forbid vault name', async () => {
         params.vaultCredential.password = new SecretValue('string', 'lorum');
         params.vault.vault.meta.name = 'lorum-ipsum';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: Disabled by security config `forbidVaultName`'
@@ -80,7 +80,7 @@ describe('Vault security check: vault password forbid vault name', async () => {
         params.vaultCredential.password = new SecretValue('string', 'some-other-password');
         params.vault.vault.meta.name = 'lorum-ipsum';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('disables when there is no password', async () => {
@@ -98,7 +98,7 @@ describe('Vault security check: vault password forbid vault name', async () => {
         params.vaultCredential.password = new SecretValue('string', '');
         params.vault.vault.meta.name = 'lorum-ipsum';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: No vault password, nothing to check'
@@ -121,7 +121,7 @@ describe('Vault security check: vault password forbid vault name', async () => {
         params.vaultCredential.password = new SecretValue('string', 'lorum');
         params.vault.vault.meta.name = '';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: No vault name, nothing to check'

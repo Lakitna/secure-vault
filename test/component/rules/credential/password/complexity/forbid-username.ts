@@ -6,11 +6,11 @@ import { CredentialRuleParameters } from '../../../../../../src/vault/enforcable
 import { getBaseVault } from '../../../../support/base-vault.ts';
 import { credentialRuleParam } from '../../../../support/credential-rule-param.ts';
 
-describe('Credential security check: credential password forbid username', async () => {
-    const vault = await getBaseVault();
-    const rulebook = new Rulebook<CredentialRuleParameters>();
-    let rule: Rule<CredentialRuleParameters>;
+const vault = await getBaseVault();
+const rulebook = new Rulebook<CredentialRuleParameters>();
+let rule: Rule<CredentialRuleParameters>;
 
+describe('Credential security check: credential password forbid username', () => {
     beforeEach(() => {
         rule = credentialPasswordComplexityForbidUsername();
         rulebook.add(rule);
@@ -71,7 +71,7 @@ describe('Credential security check: credential password forbid username', async
         params.credential.data.password = new SecretValue('string', 'lorum-ipsum');
         params.credential.data.username = 'lorum';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: Disabled by security config `forbidUsername`'
@@ -85,7 +85,7 @@ describe('Credential security check: credential password forbid username', async
         params.credential.data.password = new SecretValue('string', 'lorum-ipsum');
         params.credential.data.username = 'something-else';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('disables when there is no username', async () => {
@@ -101,7 +101,7 @@ describe('Credential security check: credential password forbid username', async
         params.credential.data.password = new SecretValue('string', 'lorum-ipsum');
         params.credential.data.username = '';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: No username, nothing to check'
@@ -122,7 +122,7 @@ describe('Credential security check: credential password forbid username', async
         params.credential.data.password = new SecretValue('string', '');
         params.credential.data.username = 'my-username';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: No password, nothing to check'
@@ -135,7 +135,7 @@ describe('Credential security check: credential password forbid username', async
         params.credential.data.password = new SecretValue('string', 'gmail');
         params.credential.data.username = 'my-username@gmail.com';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('throws when the username is not quite email-like and matches the password', async () => {

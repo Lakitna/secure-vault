@@ -12,45 +12,45 @@ describe('Secret value', () => {
         const input = 'Lorum ipsum';
         const secret = new SecretValue('string', input);
 
-        expect(secret.value instanceof kdbxweb.ProtectedValue).to.be.true;
-        expect(secret.expose()).to.equal(input);
+        expect(secret.value instanceof kdbxweb.ProtectedValue).toEqual(true);
+        expect(secret.expose()).toEqual(input);
     });
 
     it('stores a buffer as protected value and retrieves it as plaintext', () => {
         const input = Buffer.from('lorum ipsum');
         const secret = new SecretValue<Uint8Array>('binary', input);
 
-        expect(secret.value instanceof kdbxweb.ProtectedValue).to.be.true;
+        expect(secret.value instanceof kdbxweb.ProtectedValue).toEqual(true);
 
         const exposed = secret.expose();
-        expect(exposed instanceof Uint8Array).to.be.true;
+        expect(exposed instanceof Uint8Array).toEqual(true);
 
         const decoder = new TextDecoder();
-        expect(decoder.decode(exposed)).to.equal('lorum ipsum');
+        expect(decoder.decode(exposed)).toEqual('lorum ipsum');
     });
 
     it('stores a protected value and retrieves it as plaintext', () => {
         const input = kdbxweb.ProtectedValue.fromString('lorum ipsum');
         const secret = new SecretValue('string', input);
 
-        expect(secret.value instanceof kdbxweb.ProtectedValue).to.be.true;
-        expect(secret.value).to.equal(input);
+        expect(secret.value instanceof kdbxweb.ProtectedValue).toEqual(true);
+        expect(secret.value).toEqual(input);
 
-        expect(secret.expose()).to.equal('lorum ipsum');
+        expect(secret.expose()).toEqual('lorum ipsum');
     });
 
     it('get length of unexposed string value', () => {
         const input = 'Lorum ipsum';
         const secret = new SecretValue('string', input);
 
-        expect(secret.length).to.equal(input.length);
+        expect(secret.length).toEqual(input.length);
     });
 
     it('get length of unexposed binary value', () => {
         const input = 'lorum ipsum';
         const secret = new SecretValue<Uint8Array>('binary', Buffer.from(input));
 
-        expect(secret.length).to.equal(input.length);
+        expect(secret.length).toEqual(input.length);
     });
 
     it('constructor throws with unexpected type', () => {
@@ -59,7 +59,7 @@ describe('Secret value', () => {
         expect(() => {
             // @ts-expect-error Deliberate error
             new SecretValue('not-supported', input);
-        }).to.throw('Unexpected type not-supported');
+        }).toThrow('Unexpected type not-supported');
     });
 
     it('expose throws with unexpected type', () => {
@@ -71,7 +71,7 @@ describe('Secret value', () => {
 
         expect(() => {
             secret.expose();
-        }).to.throw('Unexpected secret type');
+        }).toThrow('Unexpected secret type');
     });
 
     it('does not expose a string when logged', () => {
@@ -80,8 +80,8 @@ describe('Secret value', () => {
 
         const inspected = util.inspect(secret);
 
-        expect(inspected).to.not.contain(input);
-        expect(inspected).to.contain('[SECRET]');
+        expect(inspected).not.toContain(input);
+        expect(inspected).toContain('[SECRET]');
     });
 
     describe('equals', () => {

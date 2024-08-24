@@ -5,11 +5,11 @@ import { CredentialRuleParameters } from '../../../../src/vault/enforcable.ts';
 import { getBaseVault } from '../../support/base-vault.ts';
 import { credentialRuleParam } from '../../support/credential-rule-param.ts';
 
-describe('Credential security check: allow expired credential', async () => {
-    const vault = await getBaseVault();
-    const rulebook = new Rulebook<CredentialRuleParameters>();
-    let rule: Rule<CredentialRuleParameters>;
+const vault = await getBaseVault();
+const rulebook = new Rulebook<CredentialRuleParameters>();
+let rule: Rule<CredentialRuleParameters>;
 
+describe('Credential security check: allow expired credential', () => {
     beforeEach(() => {
         rule = credentialAllowExpired();
         rulebook.add(rule);
@@ -47,7 +47,7 @@ describe('Credential security check: allow expired credential', async () => {
         params.config.credentialRestrictions.allowExpired = false;
         params.credential.expired = false;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('disables if expired credentials are allowed', async () => {
@@ -62,7 +62,7 @@ describe('Credential security check: allow expired credential', async () => {
         params.config.credentialRestrictions.allowExpired = true;
         params.credential.expired = true;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: Disabled by security config `allowExpired`'

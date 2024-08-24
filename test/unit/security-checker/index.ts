@@ -1,3 +1,7 @@
+import { describe } from 'vitest';
+
+describe.todo('Security checker');
+
 // import { expect } from 'chai';
 // import { Rule, Rulebook, RuleError } from 'rulebound';
 // import * as sinon from 'sinon';

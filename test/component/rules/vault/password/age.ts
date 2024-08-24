@@ -6,12 +6,11 @@ import { getBaseVault } from '../../../support/base-vault.ts';
 import { vaultRuleParams } from '../../../support/vault-rule-param.ts';
 
 const hourInMilliseconds = 3600000;
+const vault = await getBaseVault();
+const rulebook = new Rulebook<VaultRuleParameters>();
+let rule: Rule<VaultRuleParameters>;
 
-describe('Vault security check: vault password age', async () => {
-    const vault = await getBaseVault();
-    const rulebook = new Rulebook<VaultRuleParameters>();
-    let rule: Rule<VaultRuleParameters>;
-
+describe('Vault security check: vault password age', () => {
     beforeEach(() => {
         rule = vaultPasswordAge();
         rulebook.add(rule);
@@ -55,7 +54,7 @@ describe('Vault security check: vault password age', async () => {
             new Date(new Date().getTime() - 5 * hourInMilliseconds)
         );
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('disables when the config is 0', async () => {
@@ -69,7 +68,7 @@ describe('Vault security check: vault password age', async () => {
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.maxPasswordAge = 0;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogErrorStub).toHaveBeenCalledWith(
             'Rule disabled: Configuration error: Max password age can not be equal to or below 0'
@@ -87,7 +86,7 @@ describe('Vault security check: vault password age', async () => {
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.maxPasswordAge = -5;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogErrorStub).toHaveBeenCalledWith(
             'Rule disabled: Configuration error: Max password age can not be equal to or below 0'
@@ -105,7 +104,7 @@ describe('Vault security check: vault password age', async () => {
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.maxPasswordAge = Infinity;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: Disabled by security config `maxPasswordAge`'

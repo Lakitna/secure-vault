@@ -8,11 +8,11 @@ import { keepassVaultStoredWithKeyfile } from '../../../../../src/vault/keepass/
 import { getBaseVault } from '../../../support/base-vault.ts';
 import { vaultRuleParams } from '../../../support/vault-rule-param.ts';
 
-describe('Vault security check: vault stored with keyfile', async () => {
-    const vault = await getBaseVault();
-    const rulebook = new Rulebook<VaultRuleParameters>();
-    let rule: Rule<VaultRuleParameters>;
+const vault = await getBaseVault();
+const rulebook = new Rulebook<VaultRuleParameters>();
+let rule: Rule<VaultRuleParameters>;
 
+describe('Vault security check: vault stored with keyfile', () => {
     beforeEach(() => {
         rule = keepassVaultStoredWithKeyfile();
         rulebook.add(rule);
@@ -41,7 +41,7 @@ describe('Vault security check: vault stored with keyfile', async () => {
         params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
         params.vaultCredential.multifactor = undefined;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
     });
 
     it('disables if config allows the vault to be stored with the keyfile', async () => {
@@ -55,7 +55,7 @@ describe('Vault security check: vault stored with keyfile', async () => {
         const params = await vaultRuleParams(vault);
         params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = true;
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogDebugStub).toHaveBeenCalledWith(
             'Rule disabled: Disabled by security config `allowVaultAndKeyfileSameLocation`'
@@ -74,7 +74,7 @@ describe('Vault security check: vault stored with keyfile', async () => {
         params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
         params.vaultCredential.multifactor = '';
 
-        await rulebook.enforce(rule.name, params);
+        await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
 
         expect(ruleLogDebugStub).toHaveBeenCalledWith('Rule disabled: No keyfile defined');
     });
@@ -105,7 +105,7 @@ describe('Vault security check: vault stored with keyfile', async () => {
                 vi.spyOn(git, 'getRoot').mockResolvedValue('my/git/root/path');
                 vi.spyOn(git, 'isIgnored').mockResolvedValueOnce(true).mockResolvedValue(false);
 
-                await rulebook.enforce(rule.name, params);
+                await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
             }
         );
 
@@ -121,7 +121,7 @@ describe('Vault security check: vault stored with keyfile', async () => {
                 vi.spyOn(git, 'getRoot').mockResolvedValue('my/git/root/path');
                 vi.spyOn(git, 'isIgnored').mockResolvedValueOnce(false).mockResolvedValue(true);
 
-                await rulebook.enforce(rule.name, params);
+                await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
             }
         );
 
@@ -138,7 +138,7 @@ describe('Vault security check: vault stored with keyfile', async () => {
 
             vi.spyOn(npm, 'getRoot').mockResolvedValue(false);
 
-            await rulebook.enforce(rule.name, params);
+            await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
         });
     });
 
@@ -173,7 +173,7 @@ describe('Vault security check: vault stored with keyfile', async () => {
                 .mockResolvedValueOnce('my/npm/root/path')
                 .mockResolvedValue('another/npm/root/path');
 
-            await rulebook.enforce(rule.name, params);
+            await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
         });
     });
 
@@ -210,7 +210,7 @@ describe('Vault security check: vault stored with keyfile', async () => {
             params.config.vaultRestrictions.allowVaultAndKeyfileSameLocation = false;
             params.vaultCredential.multifactor = 'some/amazing/random/path';
 
-            await rulebook.enforce(rule.name, params);
+            await expect(rulebook.enforce(rule.name, params)).resolves.not.toThrow();
         });
     });
 });

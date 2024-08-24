@@ -3,7 +3,7 @@ import { WritableVault, WritableVaultOptions } from '../writable.ts';
 import { fileVaultPasswordComplexityCharacterForbidVaultPath } from './rules/vault/password/forbid-vault-path.ts';
 import { fileVaultStoredWithCode } from './rules/vault/vault-stored-with-code.ts';
 
-export interface FileVaultOptions extends WritableVaultOptions {}
+export type FileVaultOptions = WritableVaultOptions;
 
 export abstract class FileVault<V> extends WritableVault<V> {
     public path: string;

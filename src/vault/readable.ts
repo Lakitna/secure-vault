@@ -15,7 +15,7 @@ export const defaultGetCredentialOptions: GetCredentialOptions = {
     secure: true,
 };
 
-export interface ReadableVaultOptions extends OpenableVaultOptions {}
+export type ReadableVaultOptions = OpenableVaultOptions;
 
 export abstract class ReadableVault<V = unknown> extends OpenableVault<V> {
     public readable = true;
